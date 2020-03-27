@@ -1,12 +1,14 @@
 const aws = require('aws-sdk');
 const { program } = require('commander');
 const { initializeRegion } = require('./region');
-const { figletMessage } = require('./messages');
-const { queuesAPI } = require('./queues');
+const { output } = require('./print');
+const print = output();
+const { apiFunctions } = require('./api');
+const API = apiFunctions();
 
-figletMessage();
+print.figletPrint();
 
-//justfortesting
+// // justfortesting;
 // const Conf = require('conf');
 // const config = new Conf();
 // config.delete('region');
@@ -17,13 +19,24 @@ const createSQS = async () => {
   return sqs;
 };
 
-const moveMessage = async (source, target) => {
-  console.log(`Moving message from ${source} to ${target}`);
+const moveMessage = async (s, t) => {
+  print.movingMessages(s, t);
+  try {
+    const sqs = await createSQS();
+    const source = await API.listQueues(s, sqs);
+
+    const target = await API.listQueues(t, sqs);
+    console.log(await API.getMessages(source, target, sqs));
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const listQueues = async namePrefix => {
   const sqs = await createSQS();
-  return await queuesAPI(namePrefix, sqs);
+  const sqsQueues = await API.listQueues(namePrefix, sqs);
+  print.queuesTable(sqsQueues);
+  return sqsQueues;
 };
 
 program

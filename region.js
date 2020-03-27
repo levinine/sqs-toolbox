@@ -2,7 +2,8 @@ const aws = require('aws-sdk');
 const { exec } = require('child_process');
 const { prompt } = require('inquirer');
 const { setRegion, getRegion } = require('./conf');
-const { regionFormatErrorMessage } = require('./messages');
+const { output } = require('./print');
+const print = output();
 const regex = RegExp(
   '(us|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)-\\d'
 );
@@ -11,7 +12,7 @@ const checkRegion = region => {
   if (regex.test(region)) {
     return true;
   } else {
-    regionFormatErrorMessage(region);
+    print.regionFormatError(region);
   }
 };
 

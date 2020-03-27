@@ -1,11 +1,12 @@
 const Conf = require('conf');
 const config = new Conf();
 const { AWS_REGION } = require('./const');
-const { regionSetMessage } = require('./messages');
+const { output } = require('./print');
+const print = output();
 
 const setRegion = region => {
   config.set(AWS_REGION, region);
-  regionSetMessage(region);
+  print.regionSet(region);
 };
 
 const getRegion = () => {
