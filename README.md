@@ -18,12 +18,15 @@ npm install --save-dev sqs-toolbox
 
 ## Usage
 
-### Configuring region
+### Command Line Interface - CLI
 
-sqs-toolbox will set region to the default region value located in you PCs AWS config
-If it is unable to set the default you will be prompted to enter region
+After installing you can run sqs-toolbox from your project CLI.
 
-After the initial region setup you are always able to change it by passing `-r --region <AWS_REGION>`
+#### Configuring region
+
+sqs-toolbox will use the default region value in your AWS config file,
+If it is unable to find default you will be prompted to enter region.
+After the initial region setup you are always able to change it by passing it as option `-r --region <AWS_REGION>`
 
 Example:
 
@@ -36,10 +39,6 @@ or you can pass it along with a function call
 ```sh
 sqs-toolbox list-queues -r eu-central-1
 ```
-
-### Command Line Interface - CLI
-
-After installing you can run sqs-toolbox from your project CLI.
 
 #### Listing queues from AWS region
 
