@@ -13,9 +13,17 @@ print.figletPrint();
 const moveMessages = async (s, t, maxMessages) => {
   try {
     const API = await createAPI();
-    const messages = await API.getMessages(s, maxMessages);
-    await API.sendMessages(t, messages);
-    // await API.deleteMessages();
+    const [source, target] = await Promise.all([
+      API.listQueues(s),
+      API.listQueues(t)
+    ]).then(response => {
+      return [response[0][0].url, response[1][0].url];
+    });
+    const [messages, entries] = await API.getMessages(source, maxMessages);
+    await API.sendMessages(target, messages);
+    if (entries.length > 0) {
+      await API.deleteMessages(source, entries);
+    }
     return messages;
   } catch (error) {
     console.log(error);

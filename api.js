@@ -34,23 +34,21 @@ const apiFunctions = sqs => {
       });
   };
 
-  const getMessages = async (s, max) => {
+  const getMessages = async (QueueUrl, max) => {
     const maxMessages = typeof max === 'undefined' ? 100 : max;
-    const source = await listQueues(s).then(response => {
-      return response[0].url;
-    });
+    let messages = [];
+    let entries = [];
+    let numOfMessages = parseInt(await getNumberOfMessages(QueueUrl));
+    let progressBarMax = parseInt(maxMessages);
     const params = {
-      QueueUrl: source,
+      QueueUrl,
       AttributeNames: ['All'],
       VisibilityTimeout: 20,
       MaxNumberOfMessages: 10,
       WaitTimeSeconds: 10
     };
 
-    let messages = [];
-    let numOfMessages = parseInt(await getNumberOfMessages(source));
-    let progressBarMax = parseInt(maxMessages);
-
+    //case there is fewer messages in SQS than provided as max
     if (progressBarMax > numOfMessages) {
       progressBarMax = numOfMessages;
     }
@@ -61,7 +59,6 @@ const apiFunctions = sqs => {
       if (messages.length + 10 > maxMessages) {
         params.MaxNumberOfMessages = maxMessages - messages.length;
       }
-
       await sqs
         .receiveMessage(params)
         .promise()
@@ -71,46 +68,55 @@ const apiFunctions = sqs => {
               Id: m.MessageId,
               MessageBody: m.Body
             };
+            const entry = {
+              Id: m.MessageId,
+              ReceiptHandle: m.ReceiptHandle
+            };
             messages.push(message);
+            entries.push(entry);
           }
         });
-
       print.pullingProgress(messages.length, progressBarMax);
       if (messages.length === parseInt(maxMessages)) {
         break;
       }
-      numOfMessages = await getNumberOfMessages(source);
+      numOfMessages = await getNumberOfMessages(QueueUrl);
     }
-    return messages;
+
+    return [messages, entries];
   };
 
-  const sendMessages = async (t, messages) => {
-    const target = await listQueues(t).then(response => {
-      return response[0].url;
-    });
-    const params = {
-      QueueUrl: target
+  const sendMessages = async (QueueUrl, messages) => {
+    let params = {
+      QueueUrl
     };
     let startIndex = 0;
     while (startIndex < messages.length) {
       const batch = messages.slice(startIndex, startIndex + 10);
       params.Entries = batch;
-      // await sqs.sendMessageBatch(params).promise().then(respo);
-      sqs.sendMessageBatch(params, function(err, data) {
-        if (err) console.log(err, err.stack);
-        // an error occurred
-        else console.log(data); // successful response
-      });
+      await sqs.sendMessageBatch(params).promise();
       print.sendingProgress(startIndex, messages.length);
       startIndex = startIndex + 10;
     }
     print.sendingProgress(messages.length, messages.length);
   };
 
+  const deleteMessages = async (QueueUrl, Entries) => {
+    await sqs
+      .deleteMessageBatch({ Entries, QueueUrl })
+      .promise()
+      .then(response => {
+        if (response.Successful) {
+          print.messagesMovedSuccessfully(response.Successful.length);
+        }
+      });
+  };
+
   return {
     listQueues,
     getMessages,
-    sendMessages
+    sendMessages,
+    deleteMessages
   };
 };
 

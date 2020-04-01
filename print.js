@@ -51,7 +51,7 @@ const output = () => {
     if (max == 0) {
       console.log(chalk.red('No messages available!'));
     } else {
-      // clear();
+      clear();
       console.log(
         `Pulled ${current} of ${max} messages` + progress.update(current, max)
       );
@@ -63,11 +63,15 @@ const output = () => {
     if (max == 0) {
       console.log(chalk.red('No messages available!'));
     } else {
-      // clear();
+      clear();
       console.log(
         `Sent ${current} of ${max} messages` + progress.update(current, max)
       );
     }
+  };
+
+  const messagesMovedSuccessfully = number => {
+    console.log(chalk.green(`${number} messages have been moved sucessfully`));
   };
 
   return {
@@ -77,7 +81,8 @@ const output = () => {
     regionSet,
     pullingProgress,
     sendingProgress,
-    noQueuesFound
+    noQueuesFound,
+    messagesMovedSuccessfully
   };
 };
 
