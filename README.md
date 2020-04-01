@@ -50,7 +50,7 @@ Example:
 sqs-toolbox list-queues dev
 ```
 
-this will print all the queues from the given region with the name prefix 'dev', [name] is an optional parameter.
+this will print all the queues from the given region with the name prefix `dev`, `[name]` is an optional parameter.
 
 #### Moving messages from one queue to another
 
@@ -61,7 +61,7 @@ Example:
 sqs-toolbox move firstQueue secondQueue 5
 ```
 
-this will move 5 messages from 'firstQueue' to 'secondQueue', <sourceName> and <targetName> are required while [numberOfMessages] is an optional parameter.
+this will move 5 messages from `firstQueue` to `secondQueue`, `<sourceName>` and `<targetName>` are required while `[numberOfMessages]` is an optional parameter.
 
 #### Help
 
