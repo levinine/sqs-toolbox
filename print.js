@@ -2,7 +2,6 @@ const clear = require('clear');
 const figlet = require('figlet');
 const chalk = require('chalk');
 const clui = require('clui'),
-  Spinner = clui.Spinner,
   Progress = clui.Progress;
 
 const output = () => {

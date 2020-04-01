@@ -18,7 +18,7 @@ const apiFunctions = sqs => {
           sqsQueues = createQueuesArray(response.QueueUrls);
           return sqsQueues;
         } else {
-          print.noQueuesFound(namePrefix);
+          print.noQueuesFound(QueueNamePrefix);
           return sqsQueues;
         }
       });
@@ -101,7 +101,7 @@ const apiFunctions = sqs => {
     print.sendingProgress(messages.length, messages.length);
   };
 
-  const deleteMessages = async (QueueUrl, Entries) => {
+  const deleteMessageBatch = async (QueueUrl, Entries) => {
     await sqs
       .deleteMessageBatch({ Entries, QueueUrl })
       .promise()
@@ -116,7 +116,7 @@ const apiFunctions = sqs => {
     listQueues,
     getMessages,
     sendMessages,
-    deleteMessages
+    deleteMessageBatch
   };
 };
 

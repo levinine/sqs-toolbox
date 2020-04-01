@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { program } = require('commander');
 const { output } = require('./print');
 const print = output();
@@ -19,11 +21,14 @@ const moveMessages = async (s, t, maxMessages) => {
     ]).then(response => {
       return [response[0][0].url, response[1][0].url];
     });
+
     const [messages, entries] = await API.getMessages(source, maxMessages);
-    await API.sendMessages(target, messages);
-    if (entries.length > 0) {
-      await API.deleteMessages(source, entries);
+    if (messages.length > 0) {
+      await API.sendMessages(target, messages).then(async () => {
+        await API.deleteMessageBatch(source, entries);
+      });
     }
+
     return messages;
   } catch (error) {
     console.log(error);
