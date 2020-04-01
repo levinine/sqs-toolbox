@@ -2,6 +2,9 @@ const { output } = require('./print');
 const print = output();
 const { createQueuesArray } = require('./helper');
 const { initializeRegion } = require('./region');
+const PULL = 'pull';
+const SEND = 'send';
+const DELETE = 'delete';
 
 const apiFunctions = sqs => {
   const listQueues = async QueueNamePrefix => {
@@ -37,7 +40,7 @@ const apiFunctions = sqs => {
   const getMessages = async (QueueUrl, max) => {
     const maxMessages = typeof max === 'undefined' ? 100 : max;
     let messages = [];
-    let entries = [];
+    let deleteMessages = [];
     let numOfMessages = parseInt(await getNumberOfMessages(QueueUrl));
     let progressBarMax = parseInt(maxMessages);
     const params = {
@@ -53,7 +56,7 @@ const apiFunctions = sqs => {
       progressBarMax = numOfMessages;
     }
 
-    print.pullingProgress(messages.length, progressBarMax);
+    print.progress(messages.length, progressBarMax, PULL);
 
     while (numOfMessages > 0) {
       if (messages.length + 10 > maxMessages) {
@@ -68,22 +71,22 @@ const apiFunctions = sqs => {
               Id: m.MessageId,
               MessageBody: m.Body
             };
-            const entry = {
+            const deleteMessage = {
               Id: m.MessageId,
               ReceiptHandle: m.ReceiptHandle
             };
             messages.push(message);
-            entries.push(entry);
+            deleteMessages.push(deleteMessage);
           }
         });
-      print.pullingProgress(messages.length, progressBarMax);
+      print.progress(messages.length, progressBarMax, PULL);
       if (messages.length === parseInt(maxMessages)) {
         break;
       }
       numOfMessages = await getNumberOfMessages(QueueUrl);
     }
 
-    return [messages, entries];
+    return [messages, deleteMessages];
   };
 
   const sendMessages = async (QueueUrl, messages) => {
@@ -95,21 +98,26 @@ const apiFunctions = sqs => {
       const batch = messages.slice(startIndex, startIndex + 10);
       params.Entries = batch;
       await sqs.sendMessageBatch(params).promise();
-      print.sendingProgress(startIndex, messages.length);
+      print.progress(startIndex, messages.length, SEND);
       startIndex = startIndex + 10;
     }
-    print.sendingProgress(messages.length, messages.length);
+    print.progress(messages.length, messages.length, SEND);
   };
 
-  const deleteMessageBatch = async (QueueUrl, Entries) => {
-    await sqs
-      .deleteMessageBatch({ Entries, QueueUrl })
-      .promise()
-      .then(response => {
-        if (response.Successful) {
-          print.messagesMovedSuccessfully(response.Successful.length);
-        }
-      });
+  const deleteMessageBatch = async (QueueUrl, messages, s, t) => {
+    let params = {
+      QueueUrl
+    };
+    let startIndex = 0;
+    while (startIndex < messages.length) {
+      const batch = messages.slice(startIndex, startIndex + 10);
+      params.Entries = batch;
+      await sqs.deleteMessageBatch(params).promise();
+      print.progress(startIndex, messages.length, DELETE);
+      startIndex = startIndex + 10;
+    }
+    print.progress(messages.length, messages.length, DELETE);
+    print.messagesMovedSuccessfully(messages.length, s, t);
   };
 
   return {

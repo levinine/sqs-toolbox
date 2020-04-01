@@ -3,6 +3,7 @@ const figlet = require('figlet');
 const chalk = require('chalk');
 const clui = require('clui'),
   Progress = clui.Progress;
+const progressBar = new Progress(40);
 
 const output = () => {
   const figletPrint = () => {
@@ -45,32 +46,45 @@ const output = () => {
     );
   };
 
-  const pullingProgress = (current, max) => {
-    const progress = new Progress(40);
+  const progress = (current, max, type) => {
     if (max == 0) {
       console.log(chalk.red('No messages available!'));
-    } else {
-      clear();
-      console.log(
-        `Pulled ${current} of ${max} messages` + progress.update(current, max)
-      );
+    }
+    switch (type) {
+      case 'pull':
+        console.clear();
+        console.log(
+          `Pulled ${current} of ${max} messages` +
+            progressBar.update(current, max)
+        );
+        break;
+      case 'send':
+        console.clear();
+        console.log(
+          `Sent ${current} of ${max} messages` +
+            progressBar.update(current, max)
+        );
+        break;
+      case 'delete':
+        console.clear();
+        console.log(
+          `Deleted ${current} of ${max} messages` +
+            progressBar.update(current, max)
+        );
+        break;
+      default:
+        console.log('You are missing a progress type in the invocation');
     }
   };
 
-  const sendingProgress = (current, max) => {
-    const progress = new Progress(40);
-    if (max == 0) {
-      console.log(chalk.red('No messages available!'));
-    } else {
-      clear();
-      console.log(
-        `Sent ${current} of ${max} messages` + progress.update(current, max)
-      );
-    }
-  };
-
-  const messagesMovedSuccessfully = number => {
-    console.log(chalk.green(`${number} messages have been moved sucessfully`));
+  const messagesMovedSuccessfully = (number, source, target) => {
+    console.log(
+      chalk.green(
+        `${number} messages have been moved sucessfully from ${chalk.yellow(
+          source
+        )} to ${chalk.yellow(target)}`
+      )
+    );
   };
 
   return {
@@ -78,8 +92,7 @@ const output = () => {
     queuesTable,
     regionFormatError,
     regionSet,
-    pullingProgress,
-    sendingProgress,
+    progress,
     noQueuesFound,
     messagesMovedSuccessfully
   };

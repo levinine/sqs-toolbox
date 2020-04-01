@@ -22,10 +22,13 @@ const moveMessages = async (s, t, maxMessages) => {
       return [response[0][0].url, response[1][0].url];
     });
 
-    const [messages, entries] = await API.getMessages(source, maxMessages);
+    const [messages, deleteMessages] = await API.getMessages(
+      source,
+      maxMessages
+    );
     if (messages.length > 0) {
       await API.sendMessages(target, messages).then(async () => {
-        await API.deleteMessageBatch(source, entries);
+        await API.deleteMessageBatch(source, deleteMessages, s, t);
       });
     }
 
