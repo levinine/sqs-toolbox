@@ -2,9 +2,7 @@ const { output } = require('./print');
 const print = output();
 const { createQueuesArray } = require('./helper');
 const { initializeRegion } = require('./region');
-const PULL = 'pull';
-const SEND = 'send';
-const DELETE = 'delete';
+const { PULL, SEND, DELETE } = require('./const');
 
 const apiFunctions = sqs => {
   const listQueues = async QueueNamePrefix => {
