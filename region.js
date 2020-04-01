@@ -71,6 +71,7 @@ const initializeRegion = async () => {
   }
 
   aws.config.update({ region });
+  return new aws.SQS();
 };
 
 module.exports = {

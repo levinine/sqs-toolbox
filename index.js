@@ -1,10 +1,7 @@
-const aws = require('aws-sdk');
 const { program } = require('commander');
-const { initializeRegion } = require('./region');
 const { output } = require('./print');
 const print = output();
-const { apiFunctions } = require('./api');
-const API = apiFunctions();
+const { createAPI } = require('./api');
 
 print.figletPrint();
 
@@ -13,30 +10,27 @@ print.figletPrint();
 // const config = new Conf();
 // config.delete('region');
 
-const createSQS = async () => {
-  await initializeRegion();
-  const sqs = new aws.SQS();
-  return sqs;
-};
-
-const moveMessage = async (s, t) => {
-  print.movingMessages(s, t);
+const moveMessages = async (s, t, maxMessages) => {
   try {
-    const sqs = await createSQS();
-    const source = await API.listQueues(s, sqs);
-
-    const target = await API.listQueues(t, sqs);
-    console.log(await API.getMessages(source, target, sqs));
+    const API = await createAPI();
+    const messages = await API.getMessages(s, maxMessages);
+    await API.sendMessages(t, messages);
+    // await API.deleteMessages();
+    return messages;
   } catch (error) {
     console.log(error);
   }
 };
 
 const listQueues = async namePrefix => {
-  const sqs = await createSQS();
-  const sqsQueues = await API.listQueues(namePrefix, sqs);
-  print.queuesTable(sqsQueues);
-  return sqsQueues;
+  try {
+    const API = await createAPI();
+    const sqsQueues = await API.listQueues(namePrefix);
+    print.queuesTable(sqsQueues);
+    return sqsQueues;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 program
@@ -45,9 +39,9 @@ program
   .action(listQueues);
 
 program
-  .command('move <source> <destination>')
+  .command('move <source> <destination> [maxMessages]')
   .description('Move a message from one queue to another')
-  .action(moveMessage);
+  .action(moveMessages);
 
 program.option('-r, --region <regionName>', 'Set region');
 

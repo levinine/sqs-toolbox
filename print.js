@@ -2,7 +2,8 @@ const clear = require('clear');
 const figlet = require('figlet');
 const chalk = require('chalk');
 const clui = require('clui'),
-  Spinner = clui.Spinner;
+  Spinner = clui.Spinner,
+  Progress = clui.Progress;
 
 const output = () => {
   const figletPrint = () => {
@@ -12,13 +13,21 @@ const output = () => {
     );
   };
 
-  const queuesTable = sqsQueues => {
-    if (sqsQueues.length == 0) {
+  const noQueuesFound = namePrefix => {
+    if (namePrefix == '') {
       console.log(chalk.redBright('No queues were found!'));
     } else {
-      console.log('List of SQS Queues');
-      console.table(sqsQueues);
+      console.log(
+        chalk.redBright(
+          `Queue named ${chalk.yellow(namePrefix)} was not found!`
+        )
+      );
     }
+  };
+
+  const queuesTable = sqsQueues => {
+    console.log('List of SQS Queues');
+    console.table(sqsQueues);
   };
 
   const regionSet = region => {
@@ -37,11 +46,28 @@ const output = () => {
     );
   };
 
-  const movingMessages = (source, target) => {
-    const moving = new Spinner(
-      `Moving messages from ${chalk.yellow(source)} to ${chalk.green(target)}`
-    );
-    moving.start();
+  const pullingProgress = (current, max) => {
+    const progress = new Progress(40);
+    if (max == 0) {
+      console.log(chalk.red('No messages available!'));
+    } else {
+      // clear();
+      console.log(
+        `Pulled ${current} of ${max} messages` + progress.update(current, max)
+      );
+    }
+  };
+
+  const sendingProgress = (current, max) => {
+    const progress = new Progress(40);
+    if (max == 0) {
+      console.log(chalk.red('No messages available!'));
+    } else {
+      // clear();
+      console.log(
+        `Sent ${current} of ${max} messages` + progress.update(current, max)
+      );
+    }
   };
 
   return {
@@ -49,7 +75,9 @@ const output = () => {
     queuesTable,
     regionFormatError,
     regionSet,
-    movingMessages
+    pullingProgress,
+    sendingProgress,
+    noQueuesFound
   };
 };
 
