@@ -57,6 +57,7 @@ const promptForRegion = async () => {
 const initializeRegion = async () => {
   let region = getRegionFromArgs();
   if (region) {
+    // region is passed in the args
     if (!checkRegion(region)) {
       process.exit();
     }
@@ -64,11 +65,8 @@ const initializeRegion = async () => {
   } else if (!region && !getRegion()) {
     // region is not passed in the args and we do not have it assinged
     await setRegion(await promptForRegion());
-    region = getRegion();
-  } else if (!region) {
-    // region is not passed in the args but we have it assinged
-    region = getRegion();
   }
+  region = getRegion();
 
   aws.config.update({ region });
   return new aws.SQS();
