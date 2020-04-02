@@ -46,7 +46,7 @@ const apiFunctions = sqs => {
       AttributeNames: ['All'],
       VisibilityTimeout: 20,
       MaxNumberOfMessages: 10,
-      WaitTimeSeconds: 10
+      WaitTimeSeconds: 0
     };
 
     //case there is fewer messages in SQS than provided as max
