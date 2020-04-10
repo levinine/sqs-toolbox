@@ -1,48 +1,131 @@
 #!/usr/bin/env node
 
 const { program } = require('commander');
-const { output } = require('./print');
-const print = output();
 const { createAPI } = require('./api');
-
-print.figletPrint();
+const {
+  regexSelectMessage,
+  createDeleteArray,
+  promptForFurtherAction,
+} = require('./helper');
+const { MOVE_MESSAGE, DELETE_MESSAGE } = require('./const');
+const {
+  figletPrint,
+  queuesTablePrint,
+  messagesTablePrint,
+  messageSentSuccessfullyPrint,
+  messagesMovedSuccessfullyPrint,
+  messagesDeletedSuccessfullyPrint,
+} = require('./print');
 
 // // justfortesting;
 // const Conf = require('conf');
 // const config = new Conf();
 // config.delete('region');
 
-const moveMessages = async (s, t, maxMessages) => {
+figletPrint();
+
+const moveMessages = async (sourceQueue, targetQueue, maxMessages) => {
   try {
     const API = await createAPI();
-    const [source, target] = await Promise.all([
-      API.listQueues(s),
-      API.listQueues(t)
-    ]).then(response => {
-      return [response[0][0].url, response[1][0].url];
-    });
-
-    const [messages, deleteMessages] = await API.getMessages(
-      source,
+    const [messagesSend, messagesDelete] = await API.getMessages(
+      sourceQueue,
       maxMessages
     );
-    if (messages.length > 0) {
-      await API.sendMessages(target, messages).then(async () => {
-        await API.deleteMessageBatch(source, deleteMessages, s, t);
+    if (messagesSend.length > 0) {
+      await API.sendMessagesBatch(targetQueue, messagesSend).then(async () => {
+        await API.deleteMessageBatch(messagesDelete, sourceQueue);
+        messagesMovedSuccessfullyPrint(
+          messagesDelete.length,
+          sourceQueue,
+          targetQueue
+        );
       });
     }
 
+    return messagesSend;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const peekMessages = async (sourceQueue, maxMessages) => {
+  try {
+    const API = await createAPI();
+    const messages = await API.getMessages(sourceQueue, maxMessages).then(
+      (response) => {
+        return response[0];
+      }
+    );
+    messagesTablePrint(messages, sourceQueue);
     return messages;
   } catch (error) {
     console.log(error);
   }
 };
 
-const listQueues = async namePrefix => {
+const selectMessages = async (sourceQueue, regularExpression) => {
+  try {
+    const API = await createAPI();
+    const [allMessages, deleteMessages] = await API.getMessages(sourceQueue);
+    const regexSelectedMessages = regexSelectMessage(
+      allMessages,
+      regularExpression
+    );
+    messagesTablePrint(regexSelectedMessages, sourceQueue, regularExpression);
+    if (regexSelectedMessages.length > 0) {
+      await promptForFurtherAction(regexSelectedMessages).then(
+        async (response) => {
+          if (response.action) {
+            const deleteArray = createDeleteArray(
+              response.messages,
+              deleteMessages
+            );
+
+            if (response.action === MOVE_MESSAGE) {
+              if (response.messages.length > 0) {
+                await API.sendMessagesBatch(
+                  response.targetQueueName,
+                  response.messages
+                ).then(async () => {
+                  await API.deleteMessageBatch(deleteArray, sourceQueue);
+                  messagesMovedSuccessfullyPrint(
+                    deleteArray.length,
+                    sourceQueue,
+                    targetQueue
+                  );
+                });
+              } else if (response.action === DELETE_MESSAGE) {
+                await API.deleteMessageBatch(deleteArray, sourceQueue);
+                messagesDeletedSuccessfullyPrint(
+                  deleteArray.length,
+                  sourceQueue
+                );
+              }
+            }
+          }
+        }
+      );
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const sendMessage = async (queueName, message) => {
+  try {
+    const API = await createAPI();
+    await API.sendMessage(queueName, message);
+    messageSentSuccessfullyPrint(queueName, message);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const listQueues = async (namePrefix) => {
   try {
     const API = await createAPI();
     const sqsQueues = await API.listQueues(namePrefix);
-    print.queuesTable(sqsQueues);
+    queuesTablePrint(sqsQueues, namePrefix);
     return sqsQueues;
   } catch (error) {
     console.log(error);
@@ -55,9 +138,24 @@ program
   .action(listQueues);
 
 program
-  .command('move <source> <destination> [maxMessages]')
+  .command('move <sourceQueueName> <destinationQueueName> [maxMessages]')
   .description('Move a message from one queue to another')
   .action(moveMessages);
+
+program
+  .command('peek <queueName> [maxMessages]')
+  .description('List messages from SQS queue')
+  .action(peekMessages);
+
+program
+  .command('select <queueName> [regularExpression]')
+  .description('Select messages by regular expression')
+  .action(selectMessages);
+
+program
+  .command('send <queueName> <message>')
+  .description('Send a message to a specific queue')
+  .action(sendMessage);
 
 program.option('-r, --region <regionName>', 'Set region');
 
