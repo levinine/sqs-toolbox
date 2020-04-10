@@ -4,11 +4,14 @@ const clui = require('clui'),
   Progress = clui.Progress;
 const progressBar = new Progress(40);
 
-const figletPrint = () => {
+const figletPrint = (region) => {
   console.clear();
   console.log(
     chalk.yellow(figlet.textSync('SQS Toolbox', { horizontalLayout: 'full' }))
   );
+  if (region) {
+    console.log(chalk.yellow(`Your region is set to ${chalk.green(region)}`));
+  }
 };
 
 const queuesTablePrint = (sqsQueues, namePrefix) => {

@@ -33,7 +33,6 @@ const createDeleteArray = (selectedMessages, deleteMessages) => {
       }
     }
   }
-  console.log(deleteMessagesArray);
   return deleteMessagesArray;
 };
 

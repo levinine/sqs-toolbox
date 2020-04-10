@@ -2,12 +2,13 @@
 
 const { program } = require('commander');
 const { createAPI } = require('./api');
+const { getRegion } = require('./conf');
+const { MOVE_MESSAGE, DELETE_MESSAGE } = require('./const');
 const {
   regexSelectMessage,
   createDeleteArray,
   promptForFurtherAction,
 } = require('./helper');
-const { MOVE_MESSAGE, DELETE_MESSAGE } = require('./const');
 const {
   figletPrint,
   queuesTablePrint,
@@ -22,7 +23,7 @@ const {
 // const config = new Conf();
 // config.delete('region');
 
-figletPrint();
+figletPrint(getRegion());
 
 const moveMessages = async (sourceQueue, targetQueue, maxMessages) => {
   try {
@@ -91,7 +92,7 @@ const selectMessages = async (sourceQueue, regularExpression) => {
                   messagesMovedSuccessfullyPrint(
                     deleteArray.length,
                     sourceQueue,
-                    targetQueue
+                    response.targetQueueName
                   );
                 });
               } else if (response.action === DELETE_MESSAGE) {
