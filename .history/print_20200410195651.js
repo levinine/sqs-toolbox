@@ -58,26 +58,26 @@ const progress = (current, max, type) => {
     }
     switch (type) {
         case 'pull':
-            // console.clear();
-            Line.output(
+            console.clear();
+            console.log(
                 `Pulled ${current} of ${max} messages` +
                     progressBar.update(current, max)
             );
             break;
-        // case 'send':
-        //     console.clear();
-        //     console.log(
-        //         `Sent ${current} of ${max} messages` +
-        //             progressBar.update(current, max)
-        //     );
-        //     break;
-        // case 'delete':
-        //     console.clear();
-        //     console.log(
-        //         `Deleted ${current} of ${max} messages` +
-        //             progressBar.update(current, max)
-        //     );
-        //     break;
+        case 'send':
+            console.clear();
+            console.log(
+                `Sent ${current} of ${max} messages` +
+                    progressBar.update(current, max)
+            );
+            break;
+        case 'delete':
+            console.clear();
+            console.log(
+                `Deleted ${current} of ${max} messages` +
+                    progressBar.update(current, max)
+            );
+            break;
         default:
             console.log('You are missing a progress type in the invocation');
     }

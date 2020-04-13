@@ -1,21 +1,16 @@
 const figlet = require('figlet');
 const chalk = require('chalk');
 const clui = require('clui'),
-    Line = clui.Line,
     Progress = clui.Progress;
 const progressBar = new Progress(40);
 
-const figletPrint = region => {
+const figletPrint = (region) => {
     console.clear();
     console.log(
-        chalk.yellow(
-            figlet.textSync('SQS Toolbox', { horizontalLayout: 'full' })
-        )
+        chalk.yellow(figlet.textSync('SQS Toolbox', { horizontalLayout: 'full' }))
     );
     if (region) {
-        console.log(
-            chalk.yellow(`Your region is set to ${chalk.green(region)}`)
-        );
+        console.log(chalk.yellow(`Your region is set to ${chalk.green(region)}`));
     }
 };
 
@@ -36,13 +31,13 @@ const queuesTablePrint = (sqsQueues, namePrefix) => {
     }
 };
 
-const regionSetPrint = region => {
+const regionSetPrint = (region) => {
     console.log(
         chalk.yellow(`You have changed the region to ${chalk.green(region)}`)
     );
 };
 
-const regionFormatErrorPrint = region => {
+const regionFormatErrorPrint = (region) => {
     console.log(
         chalk.yellow(
             `\n Region value ${chalk.red(
@@ -57,29 +52,28 @@ const progress = (current, max, type) => {
         console.log(chalk.red('No messages available!'));
     }
     switch (type) {
-        case 'pull':
-            // console.clear();
-            Line.output(
-                `Pulled ${current} of ${max} messages` +
-                    progressBar.update(current, max)
-            );
-            break;
-        // case 'send':
-        //     console.clear();
-        //     console.log(
-        //         `Sent ${current} of ${max} messages` +
-        //             progressBar.update(current, max)
-        //     );
-        //     break;
-        // case 'delete':
-        //     console.clear();
-        //     console.log(
-        //         `Deleted ${current} of ${max} messages` +
-        //             progressBar.update(current, max)
-        //     );
-        //     break;
-        default:
-            console.log('You are missing a progress type in the invocation');
+    case 'pull':
+        console.clear();
+        console.log(
+            `Pulled ${current} of ${max} messages` +
+          progressBar.update(current, max)
+        );
+        break;
+    case 'send':
+        console.clear();
+        console.log(
+            `Sent ${current} of ${max} messages` + progressBar.update(current, max)
+        );
+        break;
+    case 'delete':
+        console.clear();
+        console.log(
+            `Deleted ${current} of ${max} messages` +
+          progressBar.update(current, max)
+        );
+        break;
+    default:
+        console.log('You are missing a progress type in the invocation');
     }
 };
 
@@ -92,9 +86,7 @@ const messagesTablePrint = (messages, queueName, regularExpression) => {
     }
     if (messages.length > 0) {
         console.log(
-            `List of messages from ${chalk.green(
-                queueName
-            )} queue ${regexMessage}`
+            `List of messages from ${chalk.green(queueName)} queue ${regexMessage}`
         );
         console.table(messages);
     } else {
@@ -110,9 +102,7 @@ const messagesTablePrint = (messages, queueName, regularExpression) => {
 
 const messageSentSuccessfullyPrint = (queueName, message) => {
     console.log(
-        `Message: "${chalk.green(message)}" was sent to ${chalk.green(
-            queueName
-        )}`
+        `Message: "${chalk.green(message)}" was sent to ${chalk.green(queueName)}`
     );
 };
 
@@ -145,5 +135,5 @@ module.exports = {
     messagesMovedSuccessfullyPrint,
     messageSentSuccessfullyPrint,
     messagesDeletedSuccessfullyPrint,
-    messagesTablePrint
+    messagesTablePrint,
 };

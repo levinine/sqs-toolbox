@@ -96,14 +96,12 @@ const checkBoxList = async (messages, action) => {
     };
 
     return await prompt([question]).then(answers => {
-        console.log(answers);
         answers.selectedMessages.forEach(selectedMessage => {
-            for (message of messages) {
+            messages.forEach(message => {
                 if (selectedMessage === message.MessageBody) {
                     returnMessages.push(message);
-                    break;
                 }
-            }
+            });
         });
         return returnMessages;
     });

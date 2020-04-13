@@ -1,7 +1,6 @@
 const figlet = require('figlet');
 const chalk = require('chalk');
 const clui = require('clui'),
-    Line = clui.Line,
     Progress = clui.Progress;
 const progressBar = new Progress(40);
 
@@ -59,25 +58,25 @@ const progress = (current, max, type) => {
     switch (type) {
         case 'pull':
             // console.clear();
-            Line.output(
+            console.log(
                 `Pulled ${current} of ${max} messages` +
                     progressBar.update(current, max)
             );
             break;
-        // case 'send':
-        //     console.clear();
-        //     console.log(
-        //         `Sent ${current} of ${max} messages` +
-        //             progressBar.update(current, max)
-        //     );
-        //     break;
-        // case 'delete':
-        //     console.clear();
-        //     console.log(
-        //         `Deleted ${current} of ${max} messages` +
-        //             progressBar.update(current, max)
-        //     );
-        //     break;
+        case 'send':
+            // console.clear();
+            console.log(
+                `Sent ${current} of ${max} messages` +
+                    progressBar.update(current, max)
+            );
+            break;
+        case 'delete':
+            // console.clear();
+            console.log(
+                `Deleted ${current} of ${max} messages` +
+                    progressBar.update(current, max)
+            );
+            break;
         default:
             console.log('You are missing a progress type in the invocation');
     }

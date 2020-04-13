@@ -23,7 +23,6 @@ const createQueuesArray = sqsResponse => {
 
 const createDeleteArray = (selectedMessages, deleteMessages) => {
     let deleteMessagesArray = [];
-    console.log(selectedMessages);
     selectedMessages.forEach(selectedMessage => {
         deleteMessages.forEach(deleteMessage => {
             if (selectedMessage.Id === deleteMessage.Id) {
@@ -31,7 +30,15 @@ const createDeleteArray = (selectedMessages, deleteMessages) => {
             }
         });
     });
-
+    //   for (const m of selectedMessages) {
+    //     for (const d of deleteMessages) {
+    //       if (m.Id === d.Id) {
+    //         console.log(m.Id);
+    //         console.log(d.Id);
+    //         deleteMessagesArray.push(d);
+    //       }
+    //     }
+    //   }
     return deleteMessagesArray;
 };
 
@@ -96,14 +103,12 @@ const checkBoxList = async (messages, action) => {
     };
 
     return await prompt([question]).then(answers => {
-        console.log(answers);
         answers.selectedMessages.forEach(selectedMessage => {
-            for (message of messages) {
+            messages.forEach(message => {
                 if (selectedMessage === message.MessageBody) {
                     returnMessages.push(message);
-                    break;
                 }
-            }
+            });
         });
         return returnMessages;
     });
