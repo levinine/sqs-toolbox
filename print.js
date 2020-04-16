@@ -5,7 +5,7 @@ const clui = require('clui'),
     Progress = clui.Progress;
 const progressBar = new Progress(40);
 
-const figletPrint = region => {
+const figletPrint = (region) => {
     console.clear();
     console.log(
         chalk.yellow(
@@ -17,6 +17,10 @@ const figletPrint = region => {
             chalk.yellow(`Your region is set to ${chalk.green(region)}`)
         );
     }
+};
+
+const queueCreatedSuccessfullyPrint = (queueName) => {
+    console.log(`Queue ${queueName} was created successfully`);
 };
 
 const queuesTablePrint = (sqsQueues, namePrefix) => {
@@ -36,13 +40,13 @@ const queuesTablePrint = (sqsQueues, namePrefix) => {
     }
 };
 
-const regionSetPrint = region => {
+const regionSetPrint = (region) => {
     console.log(
         chalk.yellow(`You have changed the region to ${chalk.green(region)}`)
     );
 };
 
-const regionFormatErrorPrint = region => {
+const regionFormatErrorPrint = (region) => {
     console.log(
         chalk.yellow(
             `\n Region value ${chalk.red(
@@ -138,6 +142,7 @@ const messagesDeletedSuccessfullyPrint = (number, source) => {
 
 module.exports = {
     figletPrint,
+    queueCreatedSuccessfullyPrint,
     queuesTablePrint,
     regionFormatErrorPrint,
     regionSetPrint,
@@ -145,5 +150,5 @@ module.exports = {
     messagesMovedSuccessfullyPrint,
     messageSentSuccessfullyPrint,
     messagesDeletedSuccessfullyPrint,
-    messagesTablePrint
+    messagesTablePrint,
 };

@@ -4,7 +4,13 @@ const { initializeRegion } = require('./region');
 const { PULL, SEND, DELETE } = require('./const');
 
 const apiFunctions = (sqs) => {
-    const listQueues = async (QueueNamePrefix) => {
+    const createQueue = async (QueueName) => {
+        const exists = await listQueues(QueueName);
+        console.log(exists);
+        return await sqs.createQueue({ QueueName }).promise();
+    };
+
+    const listQueues = async (QueueNamePrefix, exactMatch) => {
         if (QueueNamePrefix === 0) {
             QueueNamePrefix = '';
         }
@@ -15,7 +21,10 @@ const apiFunctions = (sqs) => {
             .then((response) => {
                 let sqsQueues = [];
                 if (response.QueueUrls) {
-                    sqsQueues = createQueuesArray(response.QueueUrls);
+                    if (exactMatch) {
+                    } else {
+                        sqsQueues = createQueuesArray(response.QueueUrls);
+                    }
                 } else {
                     // did not find a queue with that name prefix
                     queuesTablePrint(sqsQueues, QueueNamePrefix);
@@ -158,6 +167,7 @@ const apiFunctions = (sqs) => {
     };
 
     return {
+        createQueue,
         listQueues,
         getMessages,
         sendMessagesBatch,

@@ -16,6 +16,7 @@ const {
     messageSentSuccessfullyPrint,
     messagesMovedSuccessfullyPrint,
     messagesDeletedSuccessfullyPrint,
+    queueCreatedSuccessfullyPrint,
 } = require('./print');
 
 // // justfortesting;
@@ -33,14 +34,16 @@ const moveMessages = async (sourceQueue, targetQueue, maxMessages) => {
             maxMessages
         );
         if (messagesSend.length > 0) {
-            await API.sendMessagesBatch(targetQueue, messagesSend).then(async () => {
-                await API.deleteMessageBatch(messagesDelete, sourceQueue);
-                messagesMovedSuccessfullyPrint(
-                    messagesDelete.length,
-                    sourceQueue,
-                    targetQueue
-                );
-            });
+            await API.sendMessagesBatch(targetQueue, messagesSend).then(
+                async () => {
+                    await API.deleteMessageBatch(messagesDelete, sourceQueue);
+                    messagesMovedSuccessfullyPrint(
+                        messagesDelete.length,
+                        sourceQueue,
+                        targetQueue
+                    );
+                }
+            );
         }
 
         return messagesSend;
@@ -67,12 +70,18 @@ const peekMessages = async (sourceQueue, maxMessages) => {
 const selectMessages = async (sourceQueue, regularExpression) => {
     try {
         const API = await createAPI();
-        const [allMessages, deleteMessages] = await API.getMessages(sourceQueue);
+        const [allMessages, deleteMessages] = await API.getMessages(
+            sourceQueue
+        );
         const regexSelectedMessages = regexSelectMessage(
             allMessages,
             regularExpression
         );
-        messagesTablePrint(regexSelectedMessages, sourceQueue, regularExpression);
+        messagesTablePrint(
+            regexSelectedMessages,
+            sourceQueue,
+            regularExpression
+        );
         if (regexSelectedMessages.length > 0) {
             await promptForFurtherAction(regexSelectedMessages).then(
                 async (response) => {
@@ -88,7 +97,10 @@ const selectMessages = async (sourceQueue, regularExpression) => {
                                     response.targetQueueName,
                                     response.messages
                                 ).then(async () => {
-                                    await API.deleteMessageBatch(deleteArray, sourceQueue);
+                                    await API.deleteMessageBatch(
+                                        deleteArray,
+                                        sourceQueue
+                                    );
                                     messagesMovedSuccessfullyPrint(
                                         deleteArray.length,
                                         sourceQueue,
@@ -96,7 +108,10 @@ const selectMessages = async (sourceQueue, regularExpression) => {
                                     );
                                 });
                             } else if (response.action === DELETE_MESSAGE) {
-                                await API.deleteMessageBatch(deleteArray, sourceQueue);
+                                await API.deleteMessageBatch(
+                                    deleteArray,
+                                    sourceQueue
+                                );
                                 messagesDeletedSuccessfullyPrint(
                                     deleteArray.length,
                                     sourceQueue
@@ -117,6 +132,16 @@ const sendMessage = async (queueName, message) => {
         const API = await createAPI();
         await API.sendMessage(queueName, message);
         messageSentSuccessfullyPrint(queueName, message);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const createQueue = async (queueName) => {
+    try {
+        const API = await createAPI();
+        await API.createQueue(queueName);
+        queueCreatedSuccessfullyPrint(queueName);
     } catch (error) {
         console.log(error);
     }
@@ -157,6 +182,11 @@ program
     .command('send <queueName> <message>')
     .description('Send a message to a specific queue')
     .action(sendMessage);
+
+program
+    .command('create <queueName>')
+    .description('Create a queue')
+    .action(createQueue);
 
 program.option('-r, --region <regionName>', 'Set region');
 
