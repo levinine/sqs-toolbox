@@ -23,6 +23,10 @@ const queueCreatedSuccessfullyPrint = (queueName) => {
     console.log(`Queue ${queueName} was created successfully`);
 };
 
+const queueAlreadyExistsPrint = (queueName) => {
+    console.log(`Queue ${queueName} already exists`);
+};
+
 const queuesTablePrint = (sqsQueues, namePrefix) => {
     if (sqsQueues.length > 0) {
         console.log('List of SQS Queues');
@@ -61,29 +65,29 @@ const progress = (current, max, type) => {
         console.log(chalk.red('No messages available!'));
     }
     switch (type) {
-        case 'pull':
-            console.clear();
-            console.log(
-                `Pulled ${current} of ${max} messages` +
+    case 'pull':
+        console.clear();
+        console.log(
+            `Pulled ${current} of ${max} messages` +
                     progressBar.update(current, max)
-            );
-            break;
-        case 'send':
-            console.clear();
-            console.log(
-                `Sent ${current} of ${max} messages` +
+        );
+        break;
+    case 'send':
+        console.clear();
+        console.log(
+            `Sent ${current} of ${max} messages` +
                     progressBar.update(current, max)
-            );
-            break;
-        case 'delete':
-            console.clear();
-            console.log(
-                `Deleted ${current} of ${max} messages` +
+        );
+        break;
+    case 'delete':
+        console.clear();
+        console.log(
+            `Deleted ${current} of ${max} messages` +
                     progressBar.update(current, max)
-            );
-            break;
-        default:
-            console.log('You are missing a progress type in the invocation');
+        );
+        break;
+    default:
+        console.log('You are missing a progress type in the invocation');
     }
 };
 
@@ -151,4 +155,5 @@ module.exports = {
     messageSentSuccessfullyPrint,
     messagesDeletedSuccessfullyPrint,
     messagesTablePrint,
+    queueAlreadyExistsPrint
 };
