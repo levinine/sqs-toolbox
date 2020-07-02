@@ -2,7 +2,10 @@
   "name": "sqs-toolbox",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "bin": {
+    "sqs-toolbox": "./bin/index.js"
+  },
+  "main": "./bin/index.js",
   "scripts": {},
   "author": "",
   "license": "MIT",
