@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 const { program } = require('commander');
+const { prompt } = require('inquirer');
+const { exec } = require('child_process');
 const { createAPI } = require('../lib/api');
 const { getRegion } = require('../lib/conf');
 const { MOVE_MESSAGE, DELETE_MESSAGE } = require('../lib/const');
@@ -17,8 +19,13 @@ const {
     messagesMovedSuccessfullyPrint,
     messagesDeletedSuccessfullyPrint,
     queueCreatedSuccessfullyPrint,
-    queueAlreadyExistsPrint
+    queueAlreadyExistsPrint,
+    queueNotExistPrint,
+    queueDeletedSuccessfullyPrint,
+    queueDeletionAnswerFormatErrorPrint
 } = require('../lib/print');
+
+const yesOrNoRegExp = RegExp('Y|N');
 
 // // justfortesting;
 // const Conf = require('conf');
@@ -160,10 +167,61 @@ const listQueues = async (namePrefix) => {
     }
 };
 
+const deleteQueue = async (queueName) => {
+    try {
+        const deleteMessageConfirmationResult = await promptForQueueDeletion(queueName);
+        if (deleteMessageConfirmationResult === 'N') return;
+        if (deleteMessageConfirmationResult === 'Y') {
+            const API = await createAPI();
+            const deleteQueueResult = await API.deleteQueue(queueName);
+            if (!deleteQueueResult) queueNotExistPrint(queueName);
+            else queueDeletedSuccessfullyPrint(queueName);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const promptForQueueDeletion = async (queueName) => {
+    return new Promise((resolve) => {
+        exec('aws configure get region', (error, stdout, stderr) => {
+            if (error || stderr) {
+                resolve(deleteMessageConfirmationInput(queueName));
+            } else {
+                resolve(stdout);
+            }
+        });
+    });
+};
+
+const deleteMessageConfirmationInput = async (queueName) => {
+    const question = {
+        type: 'input',
+        name: 'deletionConfirmation',
+        message: `Any messages in the queue will no longer be available.\nAre you sure you want to delete ${queueName} queue? (Y/N)`,
+        validate: checkDeleteQueueAnswer,
+        default: 'N',
+    };
+    const deletionConfirmation = prompt([question])
+        .then((answer) => {
+            return answer.deletionConfirmation;
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+    return deletionConfirmation;
+};
+
+const checkDeleteQueueAnswer = (answer) => {
+    if (yesOrNoRegExp.test(answer)) return true;
+    else queueDeletionAnswerFormatErrorPrint(answer);
+};
+
+
+// CLI commands
 program
     .version('1.0.0')
     .option('-r, --region <regionName>', 'Set region');
-
 
 program
     .command('list-queues [namePrefix]')
@@ -194,5 +252,10 @@ program
     .command('create <queueName>')
     .description('Create a queue')
     .action(createQueue);
+
+program
+    .command('delete <queueName>')
+    .description('Delete a queue')
+    .action(deleteQueue);
 
 program.parse(process.argv);
