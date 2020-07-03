@@ -17,6 +17,7 @@ const {
     messagesMovedSuccessfullyPrint,
     messagesDeletedSuccessfullyPrint,
     queueCreatedSuccessfullyPrint,
+    queueAlreadyExistsPrint
 } = require('../lib/print');
 
 // // justfortesting;
@@ -140,8 +141,9 @@ const sendMessage = async (queueName, message) => {
 const createQueue = async (queueName) => {
     try {
         const API = await createAPI();
-        await API.createQueue(queueName);
-        queueCreatedSuccessfullyPrint(queueName);
+        const createQueueResult = await API.createQueue(queueName);
+        if (!createQueueResult) queueAlreadyExistsPrint(queueName);
+        else queueCreatedSuccessfullyPrint(queueName);
     } catch (error) {
         console.log(error);
     }
