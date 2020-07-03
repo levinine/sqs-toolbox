@@ -1,103 +1,154 @@
-const clear = require('clear');
 const figlet = require('figlet');
 const chalk = require('chalk');
 const clui = require('clui'),
-  Progress = clui.Progress;
+    Line = clui.Line,
+    Progress = clui.Progress;
 const progressBar = new Progress(40);
 
-const output = () => {
-  const figletPrint = () => {
-    clear();
+const figletPrint = (region) => {
+    console.clear();
     console.log(
-      chalk.yellow(figlet.textSync('SQS Toolbox', { horizontalLayout: 'full' }))
-    );
-  };
-
-  const noQueuesFound = namePrefix => {
-    if (namePrefix == '') {
-      console.log(chalk.redBright('No queues were found!'));
-    } else {
-      console.log(
-        chalk.redBright(
-          `Queue named ${chalk.yellow(namePrefix)} was not found!`
+        chalk.yellow(
+            figlet.textSync('SQS Toolbox', { horizontalLayout: 'full' })
         )
-      );
+    );
+    if (region) {
+        console.log(
+            chalk.yellow(`Your region is set to ${chalk.green(region)}`)
+        );
     }
-  };
+};
 
-  const queuesTable = sqsQueues => {
-    console.log('List of SQS Queues');
-    console.table(sqsQueues);
-  };
+const queueCreatedSuccessfullyPrint = (queueName) => {
+    console.log(`Queue ${queueName} was created successfully`);
+};
 
-  const regionSet = region => {
+const queuesTablePrint = (sqsQueues, namePrefix) => {
+    if (sqsQueues.length > 0) {
+        console.log('List of SQS Queues');
+        console.table(sqsQueues);
+    } else {
+        if (namePrefix == '') {
+            console.log(chalk.redBright('No queues were found!'));
+        } else {
+            console.log(
+                chalk.redBright(
+                    `Queue named ${chalk.yellow(namePrefix)} was not found!`
+                )
+            );
+        }
+    }
+};
+
+const regionSetPrint = (region) => {
     console.log(
-      chalk.yellow(`You have changed the region to ${chalk.green(region)}`)
+        chalk.yellow(`You have changed the region to ${chalk.green(region)}`)
     );
-  };
+};
 
-  const regionFormatError = region => {
+const regionFormatErrorPrint = (region) => {
     console.log(
-      chalk.yellow(
-        `\n Region value ${chalk.red(
-          region
-        )} is not in the correct format, please enter a valid region.`
-      )
+        chalk.yellow(
+            `\n Region value ${chalk.red(
+                region
+            )} is not in the correct format, please enter a valid region.`
+        )
     );
-  };
+};
 
-  const progress = (current, max, type) => {
+const progress = (current, max, type) => {
     if (max == 0) {
-      console.log(chalk.red('No messages available!'));
+        console.log(chalk.red('No messages available!'));
     }
     switch (type) {
-      case 'pull':
-        console.clear();
-        console.log(
-          `Pulled ${current} of ${max} messages` +
-            progressBar.update(current, max)
-        );
-        break;
-      case 'send':
-        console.clear();
-        console.log(
-          `Sent ${current} of ${max} messages` +
-            progressBar.update(current, max)
-        );
-        break;
-      case 'delete':
-        console.clear();
-        console.log(
-          `Deleted ${current} of ${max} messages` +
-            progressBar.update(current, max)
-        );
-        break;
-      default:
-        console.log('You are missing a progress type in the invocation');
+        case 'pull':
+            console.clear();
+            console.log(
+                `Pulled ${current} of ${max} messages` +
+                    progressBar.update(current, max)
+            );
+            break;
+        case 'send':
+            console.clear();
+            console.log(
+                `Sent ${current} of ${max} messages` +
+                    progressBar.update(current, max)
+            );
+            break;
+        case 'delete':
+            console.clear();
+            console.log(
+                `Deleted ${current} of ${max} messages` +
+                    progressBar.update(current, max)
+            );
+            break;
+        default:
+            console.log('You are missing a progress type in the invocation');
     }
-  };
+};
 
-  const messagesMovedSuccessfully = (number, source, target) => {
+const messagesTablePrint = (messages, queueName, regularExpression) => {
+    let regexMessage = '';
+    if (typeof regularExpression != 'undefined') {
+        regexMessage = `that match regular expression ${chalk.green(
+            regularExpression
+        )}`;
+    }
+    if (messages.length > 0) {
+        console.log(
+            `List of messages from ${chalk.green(
+                queueName
+            )} queue ${regexMessage}`
+        );
+        console.table(messages);
+    } else {
+        console.log(
+            chalk.red(
+                `No available messages were found in queue ${chalk.green(
+                    queueName
+                )} ${regexMessage}`
+            )
+        );
+    }
+};
+
+const messageSentSuccessfullyPrint = (queueName, message) => {
     console.log(
-      chalk.green(
-        `${number} messages have been moved sucessfully from ${chalk.yellow(
-          source
-        )} to ${chalk.yellow(target)}`
-      )
+        `Message: "${chalk.green(message)}" was sent to ${chalk.green(
+            queueName
+        )}`
     );
-  };
+};
 
-  return {
-    figletPrint,
-    queuesTable,
-    regionFormatError,
-    regionSet,
-    progress,
-    noQueuesFound,
-    messagesMovedSuccessfully
-  };
+const messagesMovedSuccessfullyPrint = (number, source, target) => {
+    console.log(
+        chalk.green(
+            `${number} messages have been moved sucessfully from ${chalk.yellow(
+                source
+            )} to ${chalk.yellow(target)}`
+        )
+    );
+};
+
+const messagesDeletedSuccessfullyPrint = (number, source) => {
+    console.log(
+        chalk.green(
+            `${number} messages have been deleted sucessfully from ${chalk.yellow(
+                source
+            )}`
+        )
+    );
 };
 
 module.exports = {
-  output
+    figletPrint,
+    queueCreatedSuccessfullyPrint,
+    queuesTablePrint,
+    regionFormatErrorPrint,
+    regionSetPrint,
+    progress,
+    messagesMovedSuccessfullyPrint,
+    messageSentSuccessfullyPrint,
+    messagesDeletedSuccessfullyPrint,
+    messagesTablePrint,
 };
