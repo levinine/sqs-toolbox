@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 const { program } = require('commander');
-const { createAPI } = require('./api');
-const { getRegion } = require('./conf');
-const { MOVE_MESSAGE, DELETE_MESSAGE } = require('./const');
+const { createAPI } = require('../lib/api');
+const { getRegion } = require('../lib/conf');
+const { MOVE_MESSAGE, DELETE_MESSAGE } = require('../lib/const');
 const {
     regexSelectMessage,
     createDeleteArray,
     promptForFurtherAction,
-} = require('./helper');
+} = require('../lib/helper');
 const {
     figletPrint,
     queuesTablePrint,
@@ -18,7 +18,7 @@ const {
     messagesDeletedSuccessfullyPrint,
     queueCreatedSuccessfullyPrint,
     queueAlreadyExistsPrint
-} = require('./print');
+} = require('../lib/print');
 
 // // justfortesting;
 // const Conf = require('conf');
@@ -161,6 +161,11 @@ const listQueues = async (namePrefix) => {
 };
 
 program
+    .version('1.0.0')
+    .option('-r, --region <regionName>', 'Set region');
+
+
+program
     .command('list-queues [namePrefix]')
     .description('List all queues')
     .action(listQueues);
@@ -189,7 +194,5 @@ program
     .command('create <queueName>')
     .description('Create a queue')
     .action(createQueue);
-
-program.option('-r, --region <regionName>', 'Set region');
 
 program.parse(process.argv);

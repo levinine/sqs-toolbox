@@ -13,7 +13,7 @@ AWS SQS toolbox is a set of tools for managing SQS messages.
 ## Installation
 
 ```sh
-npm install --save-dev sqs-toolbox
+npm install -g sqs-toolbox
 ```
 
 ## Usage
