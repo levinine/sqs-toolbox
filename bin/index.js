@@ -17,8 +17,12 @@ const {
     messagesMovedSuccessfullyPrint,
     messagesDeletedSuccessfullyPrint,
     queueCreatedSuccessfullyPrint,
-    queueAlreadyExistsPrint
+    queueAlreadyExistsPrint,
+    queueNotExistPrint,
+    queueDeletedSuccessfullyPrint,
 } = require('../lib/print');
+
+const { promptForQueueDeletion, yesNoEnum } = require('../lib/deleteQueueHelper')
 
 // // justfortesting;
 // const Conf = require('conf');
@@ -159,10 +163,25 @@ const listQueues = async (namePrefix) => {
     }
 };
 
+const deleteQueue = async (queueName) => {
+    try {
+        const deleteMessageConfirmationResult = await promptForQueueDeletion(queueName);
+        if (deleteMessageConfirmationResult === yesNoEnum.NO) return;
+        if (deleteMessageConfirmationResult === yesNoEnum.YES) {
+            const API = await createAPI();
+            const deleteQueueResult = await API.deleteQueue(queueName);
+            if (!deleteQueueResult) queueNotExistPrint(queueName);
+            else queueDeletedSuccessfullyPrint(queueName);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+// CLI commands
 program
     .version('1.0.0')
     .option('-r, --region <regionName>', 'Set region');
-
 
 program
     .command('list-queues [namePrefix]')
@@ -193,5 +212,10 @@ program
     .command('create <queueName>')
     .description('Create a queue')
     .action(createQueue);
+
+program
+    .command('delete <queueName>')
+    .description('Delete a queue')
+    .action(deleteQueue);
 
 program.parse(process.argv);
