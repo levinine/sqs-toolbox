@@ -64,7 +64,6 @@ const copyMessages = async (sourceQueue, targetQueue, maxMessages) => {
             sourceQueue,
             maxMessages
         );
-        console.log('|||||||||||||||messagesSend||||||||||||||', messagesSend);
         if (messagesSend.length > 0) {
             await API.sendMessagesBatch(targetQueue, messagesSend).then();
         }
