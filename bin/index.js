@@ -71,9 +71,8 @@ const peekMessages = async (sourceQueue, maxMessages) => {
 const selectMessages = async (sourceQueue, regularExpression) => {
     try {
         const API = await createAPI();
-        const [allMessages, deleteMessages] = await API.getMessages(
-            sourceQueue
-        );
+        const [allMessages, deleteMessages] = await API.getMessages(sourceQueue);
+        
         const regexSelectedMessages = regexSelectMessage(
             allMessages,
             regularExpression
