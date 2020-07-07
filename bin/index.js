@@ -76,7 +76,7 @@ const selectMessages = async (sourceQueue, regularExpression) => {
     try {
         const API = await createAPI();
         const [allMessages, deleteMessages] = await API.getMessages(sourceQueue);
-        
+
         const regexSelectedMessages = regexSelectMessage(
             allMessages,
             regularExpression
@@ -111,16 +111,16 @@ const selectMessages = async (sourceQueue, regularExpression) => {
                                         response.targetQueueName
                                     );
                                 });
-                            } else if (response.action === DELETE_MESSAGE) {
-                                await API.deleteMessageBatch(
-                                    deleteArray,
-                                    sourceQueue
-                                );
-                                messagesDeletedSuccessfullyPrint(
-                                    deleteArray.length,
-                                    sourceQueue
-                                );
                             }
+                        } else if (response.action === DELETE_MESSAGE) {
+                            await API.deleteMessageBatch(
+                                deleteArray,
+                                sourceQueue
+                            );
+                            messagesDeletedSuccessfullyPrint(
+                                deleteArray.length,
+                                sourceQueue
+                            );
                         }
                     }
                 }
