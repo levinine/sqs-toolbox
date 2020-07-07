@@ -40,28 +40,39 @@ or you can pass it along with a function call
 sqs-toolbox list-queues -r eu-central-1
 ```
 
+#### Options as parameters
+
+`--namePrefix` or `-np`
+`--queueName` or `-qn`
+`--sourceQueue` or `-sq`
+`--targetQueue` or `-tq`
+`--maxMessages` or `-mm`
+`--regularExpression` or `-re`
+`--message` or `-mg`
+
 #### Listing queues from AWS region
 
-Run `list-queues [name]` for listing all the queues from specific region
+Run `list-queues -np devQueue` or `list-queues --namePrefix devQueue` for listing all the queues from specific region
 
 Example:
 
 ```sh
-sqs-toolbox list-queues dev
+sqs-toolbox list-queues --queueName dev
 ```
 
-this will print all the queues from the given region with the name prefix `dev`, `[name]` is an optional parameter.
+this will print all the queues from the given region with the name prefix `dev`, `--namePrefix` or `-np` is an optional parameter.
 
 #### Moving messages from one queue to another
 
-Run `move <sourceName> <targetName> [numberOfMessages]`
+Run `move --sourceName sourceQueue --targetName targetQueue --maxMessages 5`
 Example:
 
 ```sh
-sqs-toolbox move firstQueue secondQueue 5
+sqs-toolbox move --sourceQueue firstQueue --targetQueue secondQueue --maxMessages 5
 ```
 
-this will move 5 messages from `firstQueue` to `secondQueue`, `<sourceName>` and `<targetName>` are required while `[numberOfMessages]` is an optional parameter.
+this will move 5 messages from `firstQueue` to `secondQueue`, `--sourceQueue` or - and `--targetQueue` are required while `--maxMessages` or `-mm` is an optional parameter.
+
 
 #### Help
 
