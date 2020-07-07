@@ -23,7 +23,7 @@ const {
     queuePurgedSuccessfullyPrint
 } = require('../lib/print');
 
-const { promptForQueueDeletion, yesNoEnum, promptForQueuePurging } = require('../lib/deleteQueueHelper')
+const { yesNoEnum, purgeQueueMessageConfirmationInput, deleteMessageConfirmationInput } = require('../lib/deleteQueueHelper')
 
 // // justfortesting;
 // const Conf = require('conf');
@@ -166,7 +166,7 @@ const listQueues = async (namePrefix) => {
 
 const deleteQueue = async (queueName) => {
     try {
-        const deleteMessageConfirmationResult = await promptForQueueDeletion(queueName);
+        const deleteMessageConfirmationResult = await deleteMessageConfirmationInput(queueName);
         if (deleteMessageConfirmationResult === yesNoEnum.NO) return;
         if (deleteMessageConfirmationResult === yesNoEnum.YES) {
             const API = await createAPI();
@@ -181,7 +181,7 @@ const deleteQueue = async (queueName) => {
 
 const purgeQueue = async (queueName) => {
     try {
-        const purgeMessagesConfirmationResult = await promptForQueuePurging(queueName);
+        const purgeMessagesConfirmationResult = await purgeQueueMessageConfirmationInput(queueName);
         if (purgeMessagesConfirmationResult === yesNoEnum.NO) return;
         if (purgeMessagesConfirmationResult === yesNoEnum.YES) {
             const API = await createAPI();
