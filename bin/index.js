@@ -20,6 +20,7 @@ const {
     queueAlreadyExistsPrint,
     queueNotExistPrint,
     queueDeletedSuccessfullyPrint,
+    missingParameterPrint
 } = require('../lib/print');
 
 const { promptForQueueDeletion, yesNoEnum } = require('../lib/deleteQueueHelper')
@@ -31,8 +32,13 @@ const { promptForQueueDeletion, yesNoEnum } = require('../lib/deleteQueueHelper'
 
 figletPrint(getRegion());
 
-const moveMessages = async (sourceQueue, targetQueue, maxMessages) => {
+const moveMessages = async () => {
     try {
+        const [requiredParameters, optionalParameters] = getParameters('move');
+        const sourceQueue = requiredParameters['sourceQueue'];
+        const targetQueue = requiredParameters['targetQueue'];
+        const maxMessages = optionalParameters['maxMessages'];
+
         const API = await createAPI();
         const [messagesSend, messagesDelete] = await API.getMessages(
             sourceQueue,
@@ -57,23 +63,31 @@ const moveMessages = async (sourceQueue, targetQueue, maxMessages) => {
     }
 };
 
-const peekMessages = async (sourceQueue, maxMessages) => {
+const peekMessages = async () => {
     try {
+        const [requiredParameters, optionalParameters] = getParameters('peek');
+        const queueName = requiredParameters['queueName'];
+        const maxMessages = optionalParameters['maxMessages'];
+
         const API = await createAPI();
-        const messages = await API.getMessages(sourceQueue, maxMessages).then(
+        const messages = await API.getMessages(queueName, maxMessages).then(
             (response) => {
                 return response[0];
             }
         );
-        messagesTablePrint(messages, sourceQueue);
+        messagesTablePrint(messages, queueName);
         return messages;
     } catch (error) {
         console.log(error);
     }
 };
 
-const selectMessages = async (sourceQueue, regularExpression) => {
+const selectMessages = async () => {
     try {
+        const [ requiredParameters, optionalParameters ] = getParameters('select');
+        const sourceQueue = requiredParameters['queueName'];
+        const regularExpression = optionalParameters['regularExpression'];
+
         const API = await createAPI();
         const [allMessages, deleteMessages] = await API.getMessages(sourceQueue);
         
@@ -131,8 +145,12 @@ const selectMessages = async (sourceQueue, regularExpression) => {
     }
 };
 
-const sendMessage = async (queueName, message) => {
+const sendMessage = async () => {
     try {
+        const requiredParameters = getParameters('send')[0];
+        const queueName = requiredParameters['queueName'];
+        const message = requiredParameters['message'];
+        
         const API = await createAPI();
         await API.sendMessage(queueName, message);
         messageSentSuccessfullyPrint(queueName, message);
@@ -141,31 +159,44 @@ const sendMessage = async (queueName, message) => {
     }
 };
 
-const createQueue = async (queueName) => {
+const createQueue = async () => {
     try {
+        const requiredParameters = getParameters('create')[0];
+        const queueName = requiredParameters['queueName'];
+
         const API = await createAPI();
         const createQueueResult = await API.createQueue(queueName);
+
         if (!createQueueResult) queueAlreadyExistsPrint(queueName);
         else queueCreatedSuccessfullyPrint(queueName);
+
     } catch (error) {
         console.log(error);
     }
 };
 
-const listQueues = async (namePrefix) => {
+const listQueues = async () => {
     try {
+        const optionalParameters = getParameters('list-queues')[1];
+        const namePrefix = optionalParameters['namePrefix'];
+
         const API = await createAPI();
         const sqsQueues = await API.listQueues(namePrefix);
+
         queuesTablePrint(sqsQueues, namePrefix);
         return sqsQueues;
+        
     } catch (error) {
         console.log(error);
     }
 };
 
-const deleteQueue = async (queueName) => {
+const deleteQueue = async () => {
     try {
+        const requiredParameters = getParameters('delete')[0];
+        const queueName = requiredParameters['queueName'];
         const deleteMessageConfirmationResult = await promptForQueueDeletion(queueName);
+
         if (deleteMessageConfirmationResult === yesNoEnum.NO) return;
         if (deleteMessageConfirmationResult === yesNoEnum.YES) {
             const API = await createAPI();
@@ -178,43 +209,118 @@ const deleteQueue = async (queueName) => {
     }
 };
 
+const getParameters = (action) => {
+    let required = {}, optional = {}, requiredParameters = {}, optionalParameters = {};
+    
+    switch (action) {
+        case 'list-queues':
+            optional = { namePrefix: ['-np', '--namePrefix'] };
+            break;
+        case 'move':
+            required = { sourceQueue: ['-sq', '--sourceQueue'], targetQueue: ['-tq', '--targetQueue'] };    
+            optional = { maxMessages: ['-mm', '--maxMessages'] };
+            break;
+        case 'peek':
+            required = { queueName: ['-qn', '--queueName'] };
+            optional = { maxMessages: ['-mm', '--maxMessages'] };
+            break;
+        case 'select':
+            required = { queueName: ['-qn', '--queueName'] };
+            optional ={ regularExpression: ['-re', '--regularExpression'] };
+            break;
+        case 'send':
+            required = { queueName: ['-qn', '--queueName'], message: ['-mg', '--message'] };
+            break;
+        case 'create':
+            required = { queueName: ['-qn', '--queueName'] };
+            break;
+        case 'delete':
+            required = { queueName: ['-qn', '--queueName'] };
+            break;
+        default:
+            console.log('ovde dodzem ne')
+    }
+    
+    if (!required) {
+        const namePrefix = process.argv.indexOf('-np') || process.argv.indexOf('--namePrefix');
+        if (namePrefix > -1) {
+            optionalParameters['namePrefix'] = process.argv[namePrefix + 1];
+        }
+    }
+
+    for (let parameter in required) {
+        const shortOption = process.argv.indexOf(required[parameter][0]);
+        const longOption = process.argv.indexOf(required[parameter][1]);
+        
+        if( shortOption > -1 ) {
+            requiredParameters[parameter] = process.argv[shortOption + 1];
+        } else if (longOption > -1) {
+            requiredParameters[parameter] = process.argv[longOption + 1];
+        } else {
+            missingParameterPrint(parameter, required[parameter]);
+            process.exit();
+        }
+    }
+
+    for (let parameter in optional) {
+        const shortOption = process.argv.indexOf(optional[parameter][0]);
+        const longOption = process.argv.indexOf(optional[parameter][1]);
+
+        if( shortOption > -1 ) {
+            optionalParameters[parameter] = process.argv[shortOption + 1];
+        }
+        if (longOption > -1) {
+            optionalParameters[parameter] = process.argv[longOption + 1];
+        }
+    }
+
+    return [requiredParameters, optionalParameters];
+}
+
 // CLI commands
 program
     .version('1.0.0')
-    .option('-r, --region <regionName>', 'Set region');
+    .option('-r, --region <regionName>', 'Set region')
+    .option('-np, --namePrefix <namePrefix>', 'Set name prefix')
+    .option('-qn, --queueName <queueName>', 'Set queue name')
+    .option('-sq, --sourceQueue <sourceQueue>', 'Set source queue')
+    .option('-tq, --targetQueue <targetQueue>', 'Set target queue')
+    .option('-mm, --maxMessages <maxMessages>', 'Set max messages')
+    .option('-re, --regularExpression <regularExpression>', 'Set regular expression')
+    .option('-mg, --message <message>', 'Set message');
 
 program
-    .command('list-queues [namePrefix]')
+    .command('list-queues')
     .description('List all queues')
     .action(listQueues);
 
 program
-    .command('move <sourceQueueName> <destinationQueueName> [maxMessages]')
+    .command('move')
     .description('Move a message from one queue to another')
     .action(moveMessages);
 
 program
-    .command('peek <queueName> [maxMessages]')
+    .command('peek')
     .description('List messages from SQS queue')
     .action(peekMessages);
 
 program
-    .command('select <queueName> [regularExpression]')
+    .command('select')
     .description('Select messages by regular expression')
     .action(selectMessages);
 
 program
-    .command('send <queueName> <message>')
+    .command('send')
     .description('Send a message to a specific queue')
     .action(sendMessage);
 
 program
-    .command('create <queueName>')
+    .command('create')
     .description('Create a queue')
     .action(createQueue);
 
 program
-    .command('delete <queueName>')
+    .command('delete')
     .description('Delete a queue')
     .action(deleteQueue);
 
