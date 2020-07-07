@@ -58,6 +58,23 @@ const moveMessages = async (sourceQueue, targetQueue, maxMessages) => {
     }
 };
 
+const copyMessages = async (sourceQueue, targetQueue, maxMessages) => {
+    try {
+        const API = await createAPI();
+        const [messagesSend] = await API.getMessages(
+            sourceQueue,
+            maxMessages
+        );
+        if (messagesSend.length > 0) {
+            await API.sendMessagesBatch(targetQueue, messagesSend).then();
+        }
+
+        return messagesSend;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 const peekMessages = async (sourceQueue, maxMessages) => {
     try {
         const API = await createAPI();
@@ -233,6 +250,11 @@ program
     .command('delete <queueName>')
     .description('Delete a queue')
     .action(deleteQueue);
+
+program
+    .command('copy <sourceQueueName> <destinationQueueName> [maxMessages]')
+    .description('Copy messages from one queue to another')
+    .action(copyMessages);
 
 program
     .command('purge <queueName>')
