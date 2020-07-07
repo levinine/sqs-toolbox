@@ -70,7 +70,7 @@ const peekMessages = async () => {
         const maxMessages = optionalParameters['maxMessages'];
 
         const API = await createAPI();
-        const messages = await API.getMessages(queueName, maxMessages).then(
+        const messages = await API.getMessages(queueName, maxMessages, 10).then(
             (response) => {
                 return response[0];
             }
