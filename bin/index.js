@@ -90,7 +90,7 @@ const selectMessages = async () => {
 
         const API = await createAPI();
         const [allMessages, deleteMessages] = await API.getMessages(sourceQueue);
-        
+
         const regexSelectedMessages = regexSelectMessage(
             allMessages,
             regularExpression
@@ -150,7 +150,7 @@ const sendMessage = async () => {
         const requiredParameters = getParameters('send')[0];
         const queueName = requiredParameters['queueName'];
         const message = requiredParameters['message'];
-        
+
         const API = await createAPI();
         await API.sendMessage(queueName, message);
         messageSentSuccessfullyPrint(queueName, message);
@@ -185,7 +185,7 @@ const listQueues = async () => {
 
         queuesTablePrint(sqsQueues, namePrefix);
         return sqsQueues;
-        
+
     } catch (error) {
         console.log(error);
     }
@@ -211,36 +211,36 @@ const deleteQueue = async () => {
 
 const getParameters = (action) => {
     let required = {}, optional = {}, requiredParameters = {}, optionalParameters = {};
-    
+
     switch (action) {
-        case 'list-queues':
-            optional = { namePrefix: ['-np', '--namePrefix'] };
-            break;
-        case 'move':
-            required = { sourceQueue: ['-sq', '--sourceQueue'], targetQueue: ['-tq', '--targetQueue'] };    
-            optional = { maxMessages: ['-mm', '--maxMessages'] };
-            break;
-        case 'peek':
-            required = { queueName: ['-qn', '--queueName'] };
-            optional = { maxMessages: ['-mm', '--maxMessages'] };
-            break;
-        case 'select':
-            required = { queueName: ['-qn', '--queueName'] };
-            optional ={ regularExpression: ['-re', '--regularExpression'] };
-            break;
-        case 'send':
-            required = { queueName: ['-qn', '--queueName'], message: ['-mg', '--message'] };
-            break;
-        case 'create':
-            required = { queueName: ['-qn', '--queueName'] };
-            break;
-        case 'delete':
-            required = { queueName: ['-qn', '--queueName'] };
-            break;
-        default:
-            console.log('ovde dodzem ne')
+    case 'list-queues':
+        optional = { namePrefix: ['-np', '--namePrefix'] };
+        break;
+    case 'move':
+        required = { sourceQueue: ['-sq', '--sourceQueue'], targetQueue: ['-tq', '--targetQueue'] };
+        optional = { maxMessages: ['-mm', '--maxMessages'] };
+        break;
+    case 'peek':
+        required = { queueName: ['-qn', '--queueName'] };
+        optional = { maxMessages: ['-mm', '--maxMessages'] };
+        break;
+    case 'select':
+        required = { queueName: ['-qn', '--queueName'] };
+        optional ={ regularExpression: ['-re', '--regularExpression'] };
+        break;
+    case 'send':
+        required = { queueName: ['-qn', '--queueName'], message: ['-mg', '--message'] };
+        break;
+    case 'create':
+        required = { queueName: ['-qn', '--queueName'] };
+        break;
+    case 'delete':
+        required = { queueName: ['-qn', '--queueName'] };
+        break;
+    default:
+        console.log('ovde dodzem ne')
     }
-    
+
     if (!required) {
         const namePrefix = process.argv.indexOf('-np') || process.argv.indexOf('--namePrefix');
         if (namePrefix > -1) {
@@ -251,7 +251,7 @@ const getParameters = (action) => {
     for (let parameter in required) {
         const shortOption = process.argv.indexOf(required[parameter][0]);
         const longOption = process.argv.indexOf(required[parameter][1]);
-        
+
         if( shortOption > -1 ) {
             requiredParameters[parameter] = process.argv[shortOption + 1];
         } else if (longOption > -1) {
