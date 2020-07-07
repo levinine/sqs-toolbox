@@ -20,9 +20,10 @@ const {
     queueAlreadyExistsPrint,
     queueNotExistPrint,
     queueDeletedSuccessfullyPrint,
+    queuePurgedSuccessfullyPrint
 } = require('../lib/print');
 
-const { promptForQueueDeletion, yesNoEnum } = require('../lib/deleteQueueHelper')
+const { yesNoEnum, purgeQueueMessageConfirmationInput, deleteMessageConfirmationInput } = require('../lib/deleteQueueHelper')
 
 // // justfortesting;
 // const Conf = require('conf');
@@ -165,13 +166,28 @@ const listQueues = async (namePrefix) => {
 
 const deleteQueue = async (queueName) => {
     try {
-        const deleteMessageConfirmationResult = await promptForQueueDeletion(queueName);
+        const deleteMessageConfirmationResult = await deleteMessageConfirmationInput(queueName);
         if (deleteMessageConfirmationResult === yesNoEnum.NO) return;
         if (deleteMessageConfirmationResult === yesNoEnum.YES) {
             const API = await createAPI();
             const deleteQueueResult = await API.deleteQueue(queueName);
             if (!deleteQueueResult) queueNotExistPrint(queueName);
             else queueDeletedSuccessfullyPrint(queueName);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const purgeQueue = async (queueName) => {
+    try {
+        const purgeMessagesConfirmationResult = await purgeQueueMessageConfirmationInput(queueName);
+        if (purgeMessagesConfirmationResult === yesNoEnum.NO) return;
+        if (purgeMessagesConfirmationResult === yesNoEnum.YES) {
+            const API = await createAPI();
+            const prugeQueue = await API.purgeQueue(queueName);
+            if (!prugeQueue) queueNotExistPrint(queueName);
+            else queuePurgedSuccessfullyPrint(queueName);
         }
     } catch (error) {
         console.log(error);
@@ -217,5 +233,10 @@ program
     .command('delete <queueName>')
     .description('Delete a queue')
     .action(deleteQueue);
+
+program
+    .command('purge <queueName>')
+    .description('Purge a queue')
+    .action(purgeQueue);
 
 program.parse(process.argv);
