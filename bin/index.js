@@ -91,10 +91,16 @@ const selectMessages = async () => {
         const API = await createAPI();
         const [allMessages, deleteMessages] = await API.getMessages(sourceQueue);
 
-        const regexSelectedMessages = regexSelectMessage(
-            allMessages,
-            regularExpression
-        );
+        let regexSelectedMessages = [];
+        if(regularExpression) {
+            regexSelectedMessages = regexSelectMessage(
+                allMessages,
+                regularExpression
+            );
+        } else {
+            regexSelectedMessages = allMessages;
+        }
+        
         messagesTablePrint(
             regexSelectedMessages,
             sourceQueue,
