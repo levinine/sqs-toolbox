@@ -20,9 +20,10 @@ const {
     queueAlreadyExistsPrint,
     queueNotExistPrint,
     queueDeletedSuccessfullyPrint,
+    queuePurgedSuccessfullyPrint
 } = require('../lib/print');
 
-const { promptForQueueDeletion, yesNoEnum } = require('../lib/deleteQueueHelper')
+const { promptForQueueDeletion, yesNoEnum, promptForQueuePurging } = require('../lib/deleteQueueHelper')
 
 // // justfortesting;
 // const Conf = require('conf');
@@ -178,6 +179,21 @@ const deleteQueue = async (queueName) => {
     }
 };
 
+const purgeQueue = async (queueName) => {
+    try {
+        const purgeMessagesConfirmationResult = await promptForQueuePurging(queueName);
+        if (purgeMessagesConfirmationResult === yesNoEnum.NO) return;
+        if (purgeMessagesConfirmationResult === yesNoEnum.YES) {
+            const API = await createAPI();
+            const prugeQueue = await API.purgeQueue(queueName);
+            if (!prugeQueue) queueNotExistPrint(queueName);
+            else queuePurgedSuccessfullyPrint(queueName);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 // CLI commands
 program
     .version('1.0.0')
@@ -217,5 +233,10 @@ program
     .command('delete <queueName>')
     .description('Delete a queue')
     .action(deleteQueue);
+
+program
+    .command('purge <queueName>')
+    .description('Purge a queue')
+    .action(purgeQueue);
 
 program.parse(process.argv);
