@@ -20,10 +20,11 @@ const {
     queueCreatedSuccessfullyPrint,
     queueAlreadyExistsPrint,
     queueNotExistPrint,
-    queueDeletedSuccessfullyPrint
+    queueDeletedSuccessfullyPrint,
+    queuePurgedSuccessfullyPrint
 } = require('../lib/print');
 
-const { promptForQueueDeletion, yesNoEnum } = require('../lib/deleteQueueHelper')
+const { yesNoEnum, purgeQueueMessageConfirmationInput, deleteMessageConfirmationInput } = require('../lib/deleteQueueHelper')
 
 // // justfortesting;
 // const Conf = require('conf');
@@ -55,6 +56,23 @@ const moveMessages = async () => {
                     );
                 }
             );
+        }
+
+        return messagesSend;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const copyMessages = async (sourceQueue, targetQueue, maxMessages) => {
+    try {
+        const API = await createAPI();
+        const [messagesSend] = await API.getMessages(
+            sourceQueue,
+            maxMessages
+        );
+        if (messagesSend.length > 0) {
+            await API.sendMessagesBatch(targetQueue, messagesSend).then();
         }
 
         return messagesSend;
@@ -131,16 +149,16 @@ const selectMessages = async () => {
                                         response.targetQueueName
                                     );
                                 });
-                            } else if (response.action === DELETE_MESSAGE) {
-                                await API.deleteMessageBatch(
-                                    deleteArray,
-                                    sourceQueue
-                                );
-                                messagesDeletedSuccessfullyPrint(
-                                    deleteArray.length,
-                                    sourceQueue
-                                );
                             }
+                        } else if (response.action === DELETE_MESSAGE) {
+                            await API.deleteMessageBatch(
+                                deleteArray,
+                                sourceQueue
+                            );
+                            messagesDeletedSuccessfullyPrint(
+                                deleteArray.length,
+                                sourceQueue
+                            );
                         }
                     }
                 }
@@ -202,7 +220,8 @@ const deleteQueue = async () => {
         const requiredParameters = getParameters('delete')[0];
         const queueName = requiredParameters['queueName'];
         const deleteMessageConfirmationResult = await promptForQueueDeletion(queueName);
-
+        const deleteMessageConfirmationResult = await deleteMessageConfirmationInput(queueName);
+      
         if (deleteMessageConfirmationResult === yesNoEnum.NO) return;
         if (deleteMessageConfirmationResult === yesNoEnum.YES) {
             const API = await createAPI();
@@ -215,7 +234,20 @@ const deleteQueue = async () => {
     }
 };
 
-
+const purgeQueue = async (queueName) => {
+    try {
+        const purgeMessagesConfirmationResult = await purgeQueueMessageConfirmationInput(queueName);
+        if (purgeMessagesConfirmationResult === yesNoEnum.NO) return;
+        if (purgeMessagesConfirmationResult === yesNoEnum.YES) {
+            const API = await createAPI();
+            const prugeQueue = await API.purgeQueue(queueName);
+            if (!prugeQueue) queueNotExistPrint(queueName);
+            else queuePurgedSuccessfullyPrint(queueName);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
 
 // CLI commands
 program
@@ -263,5 +295,15 @@ program
     .command('delete')
     .description('Delete a queue')
     .action(deleteQueue);
+
+program
+    .command('copy <sourceQueueName> <destinationQueueName> [maxMessages]')
+    .description('Copy messages from one queue to another')
+    .action(copyMessages);
+
+program
+    .command('purge <queueName>')
+    .description('Purge a queue')
+    .action(purgeQueue);
 
 program.parse(process.argv);
