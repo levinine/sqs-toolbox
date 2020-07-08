@@ -20,7 +20,10 @@ const {
     queueAlreadyExistsPrint,
     queueNotExistPrint,
     queueDeletedSuccessfullyPrint,
-    queuePurgedSuccessfullyPrint
+    queuePurgedSuccessfullyPrint,
+    queueNotExistCannotBeDeletedPrint,
+    queueNotExistCannotBePurgedPrint,
+    queueNotExistCannotBeSelectedPrint
 } = require('../lib/print');
 
 const { yesNoEnum, purgeQueueMessageConfirmationInput, deleteMessageConfirmationInput } = require('../lib/deleteQueueHelper')
@@ -93,6 +96,11 @@ const peekMessages = async (sourceQueue, maxMessages) => {
 const selectMessages = async (sourceQueue, regularExpression) => {
     try {
         const API = await createAPI();
+        const queueExisits = await API.checkIfQueueExists(sourceQueue);
+        if (!queueExisits) {
+            queueNotExistCannotBeSelectedPrint(sourceQueue);
+            return;
+        }
         const [allMessages, deleteMessages] = await API.getMessages(sourceQueue);
 
         const regexSelectedMessages = regexSelectMessage(
@@ -183,10 +191,15 @@ const listQueues = async (namePrefix) => {
 
 const deleteQueue = async (queueName) => {
     try {
+        const API = await createAPI();
+        const queueExisits = await API.checkIfQueueExists(queueName);
+        if (!queueExisits) {
+            queueNotExistCannotBeDeletedPrint(queueName);
+            return;
+        }
         const deleteMessageConfirmationResult = await deleteMessageConfirmationInput(queueName);
         if (deleteMessageConfirmationResult === yesNoEnum.NO) return;
         if (deleteMessageConfirmationResult === yesNoEnum.YES) {
-            const API = await createAPI();
             const deleteQueueResult = await API.deleteQueue(queueName);
             if (!deleteQueueResult) queueNotExistPrint(queueName);
             else queueDeletedSuccessfullyPrint(queueName);
@@ -198,10 +211,15 @@ const deleteQueue = async (queueName) => {
 
 const purgeQueue = async (queueName) => {
     try {
+        const API = await createAPI();
+        const queueExisits = await API.checkIfQueueExists(queueName);
+        if (!queueExisits) {
+            queueNotExistCannotBePurgedPrint(queueName);
+            return;
+        }
         const purgeMessagesConfirmationResult = await purgeQueueMessageConfirmationInput(queueName);
         if (purgeMessagesConfirmationResult === yesNoEnum.NO) return;
         if (purgeMessagesConfirmationResult === yesNoEnum.YES) {
-            const API = await createAPI();
             const prugeQueue = await API.purgeQueue(queueName);
             if (!prugeQueue) queueNotExistPrint(queueName);
             else queuePurgedSuccessfullyPrint(queueName);
