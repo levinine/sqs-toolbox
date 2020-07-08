@@ -8,6 +8,7 @@ const {
     regexSelectMessage,
     createDeleteArray,
     promptForFurtherAction,
+    getParameters
 } = require('../lib/helper');
 const {
     figletPrint,
@@ -19,8 +20,7 @@ const {
     queueCreatedSuccessfullyPrint,
     queueAlreadyExistsPrint,
     queueNotExistPrint,
-    queueDeletedSuccessfullyPrint,
-    missingParameterPrint
+    queueDeletedSuccessfullyPrint
 } = require('../lib/print');
 
 const { promptForQueueDeletion, yesNoEnum } = require('../lib/deleteQueueHelper')
@@ -215,73 +215,7 @@ const deleteQueue = async () => {
     }
 };
 
-const getParameters = (action) => {
-    let required = {}, optional = {}, requiredParameters = {}, optionalParameters = {};
 
-    switch (action) {
-    case 'list-queues':
-        optional = { namePrefix: ['-np', '--namePrefix'] };
-        break;
-    case 'move':
-        required = { sourceQueue: ['-sq', '--sourceQueue'], targetQueue: ['-tq', '--targetQueue'] };
-        optional = { maxMessages: ['-mm', '--maxMessages'] };
-        break;
-    case 'peek':
-        required = { queueName: ['-qn', '--queueName'] };
-        optional = { maxMessages: ['-mm', '--maxMessages'] };
-        break;
-    case 'select':
-        required = { queueName: ['-qn', '--queueName'] };
-        optional ={ regularExpression: ['-re', '--regularExpression'] };
-        break;
-    case 'send':
-        required = { queueName: ['-qn', '--queueName'], message: ['-mg', '--message'] };
-        break;
-    case 'create':
-        required = { queueName: ['-qn', '--queueName'] };
-        break;
-    case 'delete':
-        required = { queueName: ['-qn', '--queueName'] };
-        break;
-    default:
-        console.log('ovde dodzem ne')
-    }
-
-    if (!required) {
-        const namePrefix = process.argv.indexOf('-np') || process.argv.indexOf('--namePrefix');
-        if (namePrefix > -1) {
-            optionalParameters['namePrefix'] = process.argv[namePrefix + 1];
-        }
-    }
-
-    for (let parameter in required) {
-        const shortOption = process.argv.indexOf(required[parameter][0]);
-        const longOption = process.argv.indexOf(required[parameter][1]);
-
-        if( shortOption > -1 ) {
-            requiredParameters[parameter] = process.argv[shortOption + 1];
-        } else if (longOption > -1) {
-            requiredParameters[parameter] = process.argv[longOption + 1];
-        } else {
-            missingParameterPrint(parameter, required[parameter]);
-            process.exit();
-        }
-    }
-
-    for (let parameter in optional) {
-        const shortOption = process.argv.indexOf(optional[parameter][0]);
-        const longOption = process.argv.indexOf(optional[parameter][1]);
-
-        if( shortOption > -1 ) {
-            optionalParameters[parameter] = process.argv[shortOption + 1];
-        }
-        if (longOption > -1) {
-            optionalParameters[parameter] = process.argv[longOption + 1];
-        }
-    }
-
-    return [requiredParameters, optionalParameters];
-}
 
 // CLI commands
 program
