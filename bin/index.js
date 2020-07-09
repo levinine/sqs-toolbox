@@ -64,7 +64,11 @@ const moveMessages = async () => {
     }
 };
 
-const copyMessages = async (sourceQueue, targetQueue, maxMessages) => {
+const copyMessages = async () => {
+    const [requiredParameters, optionalParameters] = getParameters('copy');
+    const sourceQueue = requiredParameters['sourceQueue'];
+    const targetQueue = requiredParameters['targetQueue'];
+    const maxMessages = optionalParameters['maxMessages'];
     try {
         const API = await createAPI();
         const [messagesSend] = await API.getMessages(
@@ -118,7 +122,7 @@ const selectMessages = async () => {
         } else {
             regexSelectedMessages = allMessages;
         }
-        
+
         messagesTablePrint(
             regexSelectedMessages,
             sourceQueue,
@@ -219,9 +223,8 @@ const deleteQueue = async () => {
     try {
         const requiredParameters = getParameters('delete')[0];
         const queueName = requiredParameters['queueName'];
-        const deleteMessageConfirmationResult = await promptForQueueDeletion(queueName);
         const deleteMessageConfirmationResult = await deleteMessageConfirmationInput(queueName);
-      
+
         if (deleteMessageConfirmationResult === yesNoEnum.NO) return;
         if (deleteMessageConfirmationResult === yesNoEnum.YES) {
             const API = await createAPI();
@@ -234,8 +237,10 @@ const deleteQueue = async () => {
     }
 };
 
-const purgeQueue = async (queueName) => {
+const purgeQueue = async () => {
     try {
+        const requiredParameters = getParameters('purge')[0];
+        const queueName = requiredParameters['queueName'];
         const purgeMessagesConfirmationResult = await purgeQueueMessageConfirmationInput(queueName);
         if (purgeMessagesConfirmationResult === yesNoEnum.NO) return;
         if (purgeMessagesConfirmationResult === yesNoEnum.YES) {
@@ -297,12 +302,12 @@ program
     .action(deleteQueue);
 
 program
-    .command('copy <sourceQueueName> <destinationQueueName> [maxMessages]')
+    .command('copy')
     .description('Copy messages from one queue to another')
     .action(copyMessages);
 
 program
-    .command('purge <queueName>')
+    .command('purge')
     .description('Purge a queue')
     .action(purgeQueue);
 
