@@ -67,7 +67,11 @@ const moveMessages = async () => {
     }
 };
 
-const copyMessages = async (sourceQueue, targetQueue, maxMessages) => {
+const copyMessages = async () => {
+    const [requiredParameters, optionalParameters] = getParameters('copy');
+    const sourceQueue = requiredParameters['sourceQueue'];
+    const targetQueue = requiredParameters['targetQueue'];
+    const maxMessages = optionalParameters['maxMessages'];
     try {
         const API = await createAPI();
         const [messagesSend] = await API.getMessages(
@@ -246,8 +250,10 @@ const deleteQueue = async () => {
     }
 };
 
-const purgeQueue = async (queueName) => {
+const purgeQueue = async () => {
     try {
+        const requiredParameters = getParameters('purge')[0];
+        const queueName = requiredParameters['queueName'];
         const API = await createAPI();
         const queueExisits = await API.checkIfQueueExists(queueName);
         if (!queueExisits) {
@@ -314,12 +320,12 @@ program
     .action(deleteQueue);
 
 program
-    .command('copy <sourceQueueName> <destinationQueueName> [maxMessages]')
+    .command('copy')
     .description('Copy messages from one queue to another')
     .action(copyMessages);
 
 program
-    .command('purge <queueName>')
+    .command('purge')
     .description('Purge a queue')
     .action(purgeQueue);
 
