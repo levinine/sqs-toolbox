@@ -147,7 +147,7 @@ const selectMessages = async () => {
                                 response.messages,
                                 deleteMessages
                             );
-    
+
                             if (response.action === MOVE_MESSAGE) {
                                 await API.sendMessagesBatch(
                                     response.targetQueueName,
@@ -163,12 +163,12 @@ const selectMessages = async () => {
                                         response.targetQueueName
                                     );
                                 });
-                                
+
                             } else if (response.action === COPY_MESSAGE) {
                                 await API.sendMessagesBatch(response.targetQueueName, response.messages)
                                 messagesCopiedSuccessfullyPrint(
-                                    response.messages.length, 
-                                    sourceQueue, 
+                                    response.messages.length,
+                                    sourceQueue,
                                     response.targetQueueName
                                 );
 
@@ -185,7 +185,7 @@ const selectMessages = async () => {
                         } else {
                             noMessagesSelectedPrint();
                         }
-                         
+
                     }
                 }
             );

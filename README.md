@@ -42,13 +42,13 @@ sqs-toolbox list -r eu-central-1
 
 #### Options as parameters
 
-`-np --namePrefix` 
-`-qn --queueName`
-`-sq --sourceQueue`
-`-tq --targetQueue`
-`-mm --maxMessages`
-`-re --regularExpression`
-`-mg --message` 
+`-np --namePrefix`\
+`-qn --queueName`\
+`-sq --sourceQueue`\  
+`-tq --targetQueue`\ 
+`-mm --maxMessages`\ 
+`-re --regularExpression`\  
+`-mg --message`
 
 #### Listing queues from AWS region - list
 
