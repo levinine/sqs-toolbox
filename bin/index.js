@@ -142,13 +142,13 @@ const selectMessages = async () => {
             await promptForFurtherAction(regexSelectedMessages).then(
                 async (response) => {
                     if (response.action) {
-                        const deleteArray = createDeleteArray(
-                            response.messages,
-                            deleteMessages
-                        );
-
-                        if (response.action === MOVE_MESSAGE) {
-                            if (response.messages.length > 0) {
+                        if(response.messages.length > 0) {
+                            const deleteArray = createDeleteArray(
+                                response.messages,
+                                deleteMessages
+                            );
+    
+                            if (response.action === MOVE_MESSAGE) {
                                 await API.sendMessagesBatch(
                                     response.targetQueueName,
                                     response.messages
@@ -163,26 +163,29 @@ const selectMessages = async () => {
                                         response.targetQueueName
                                     );
                                 });
-                            } else {
-                                noMessagesSelectedPrint();
-                            }
-                        } else if (response.action === COPY_MESSAGE) {
-                            if (response.messages.length > 0) {
+                                
+                            } else if (response.action === COPY_MESSAGE) {
                                 await API.sendMessagesBatch(response.targetQueueName, response.messages)
-                                messagesCopiedSuccessfullyPrint(response.messages.length, sourceQueue, response.targetQueueName);
-                            } else {
-                                noMessagesSelectedPrint();
+                                messagesCopiedSuccessfullyPrint(
+                                    response.messages.length, 
+                                    sourceQueue, 
+                                    response.targetQueueName
+                                );
+
+                            } else if (response.action === DELETE_MESSAGE) {
+                                await API.deleteMessageBatch(
+                                    deleteArray,
+                                    sourceQueue
+                                );
+                                messagesDeletedSuccessfullyPrint(
+                                    deleteArray.length,
+                                    sourceQueue
+                                );
                             }
-                        } else if (response.action === DELETE_MESSAGE) {
-                            await API.deleteMessageBatch(
-                                deleteArray,
-                                sourceQueue
-                            );
-                            messagesDeletedSuccessfullyPrint(
-                                deleteArray.length,
-                                sourceQueue
-                            );
-                        } 
+                        } else {
+                            noMessagesSelectedPrint();
+                        }
+                         
                     }
                 }
             );
@@ -311,14 +314,19 @@ program
     .action(peekMessages);
 
 program
-    .command('select')
-    .description('Select messages by regular expression')
-    .action(selectMessages);
-
-program
     .command('send')
     .description('Send a message to a specific queue')
     .action(sendMessage);
+
+program
+    .command('copy')
+    .description('Copy messages from one queue to another')
+    .action(copyMessages);
+
+program
+    .command('purge')
+    .description('Purge a queue')
+    .action(purgeQueue);
 
 program
     .command('create')
@@ -331,13 +339,9 @@ program
     .action(deleteQueue);
 
 program
-    .command('copy')
-    .description('Copy messages from one queue to another')
-    .action(copyMessages);
+    .command('select')
+    .description('Select messages by regular expression')
+    .action(selectMessages);
 
-program
-    .command('purge')
-    .description('Purge a queue')
-    .action(purgeQueue);
 
 program.parse(process.argv);
