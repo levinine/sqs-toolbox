@@ -213,7 +213,7 @@ const createQueue = async () => {
 
 const listQueues = async () => {
     try {
-        const optionalParameters = getParameters('list-queues')[1];
+        const optionalParameters = getParameters('list')[1];
         const namePrefix = optionalParameters['namePrefix'];
 
         const API = await createAPI();
@@ -285,7 +285,7 @@ program
     .option('-mg, --message <message>', 'Set message');
 
 program
-    .command('list-queues')
+    .command('list')
     .description('List all queues')
     .action(listQueues);
 
