@@ -3,7 +3,7 @@
 const { program } = require('commander');
 const { createAPI } = require('../lib/api');
 const { getRegion } = require('../lib/conf');
-const { MOVE_MESSAGE, DELETE_MESSAGE } = require('../lib/const');
+const { MOVE_MESSAGE, DELETE_MESSAGE, COPY_MESSAGE } = require('../lib/const');
 const {
     regexSelectMessage,
     createDeleteArray,
@@ -25,7 +25,8 @@ const {
     queueNotExistCannotBeDeletedPrint,
     queueNotExistCannotBePurgedPrint,
     queueNotExistCannotBeSelectedPrint,
-    noMessagesSelectedPrint
+    noMessagesSelectedPrint,
+    messagesCopiedSuccessfullyPrint
 } = require('../lib/print');
 
 const { yesNoEnum, purgeQueueMessageConfirmationInput, deleteMessageConfirmationInput } = require('../lib/deleteQueueHelper')
@@ -165,6 +166,13 @@ const selectMessages = async () => {
                             } else {
                                 noMessagesSelectedPrint();
                             }
+                        } else if (response.action === COPY_MESSAGE) {
+                            if (response.messages.length > 0) {
+                                await API.sendMessagesBatch(response.targetQueueName, response.messages)
+                                messagesCopiedSuccessfullyPrint(response.messages.length, sourceQueue, response.targetQueueName);
+                            } else {
+                                noMessagesSelectedPrint();
+                            }
                         } else if (response.action === DELETE_MESSAGE) {
                             await API.deleteMessageBatch(
                                 deleteArray,
@@ -174,7 +182,7 @@ const selectMessages = async () => {
                                 deleteArray.length,
                                 sourceQueue
                             );
-                        }
+                        } 
                     }
                 }
             );
