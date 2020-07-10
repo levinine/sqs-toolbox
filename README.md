@@ -52,7 +52,7 @@ sqs-toolbox list -r eu-central-1
 
 #### Listing queues from AWS region - list
 
-Run `list -np [devQueue]` or `list --namePrefix [devQueue]` for listing all the queues from specific region
+Run `list -np [devQueue]` or `list --namePrefix [devQueue]` for listing all the queues from specific region\
 
 Example:
 
@@ -64,7 +64,7 @@ this will print all the queues from the given region with the name prefix `dev`,
 
 #### Moving messages from one queue to another - move
 
-Run `move --sourceName <sourceQueue> --targetName <targetQueue> --maxMessages [5]`
+Run `move --sourceName <sourceQueue> --targetName <targetQueue> --maxMessages [5]`\
 Example:
 
 ```sh
@@ -75,7 +75,7 @@ this will move 5 messages from `firstQueue` to `secondQueue`, `-sq --sourceQueue
 
 #### Copy messages from one queue to another - copy
 
-Run `copy --sourceName <sourceQueue> --targetName <targetQueue> --maxMessages [5]`
+Run `copy --sourceName <sourceQueue> --targetName <targetQueue> --maxMessages [5]`\
 Example:
 
 ```sh
@@ -86,7 +86,7 @@ this will copy 5 messages from `firstQueue` to `secondQueue`, `-sq --sourceQueue
 
 #### Listing queues messages - peek
 
-Run `peek --queueName <queueName> --maxMessages [5]`
+Run `peek --queueName <queueName> --maxMessages [5]`\
 Example:
 
 ```sh
@@ -97,7 +97,7 @@ this will list 5 messages from `peekQueue`, `-qn --queueName` is required while 
 
 #### Sending a message to queue - send
 
-Run `send --queueName <queueName> --message <'This is the message'>`
+Run `send --queueName <queueName> --message <'This is the message'>`\
 Example:
 
 ```sh
@@ -119,7 +119,7 @@ you will be prompted to confirm deletion, this will delete all messages in `purg
 
 #### Create a queue - create
 
-Run `create --queueName <queueName>`
+Run `create --queueName <queueName>`\
 Example:
 
 ```sh
@@ -130,7 +130,7 @@ this will create a queue named `createQueue`, `-qn --queueName` is a required pa
 
 #### Delete a queue - delete
 
-Run `delete --queueName <queueName>`
+Run `delete --queueName <queueName>`\
 Example:
 
 ```sh
@@ -141,7 +141,7 @@ you will be prompted to confirm deletion, this will delete a queue named `delete
 
 #### Select messages from queue - select
 
-Run `select --queueName <queueName> --regularExpression ['expression']`
+Run `select --queueName <queueName> --regularExpression ['expression']`\
 Example:
 
 ```sh
