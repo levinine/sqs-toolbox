@@ -24,7 +24,8 @@ const {
     queuePurgedSuccessfullyPrint,
     queueNotExistCannotBeDeletedPrint,
     queueNotExistCannotBePurgedPrint,
-    queueNotExistCannotBeSelectedPrint
+    queueNotExistCannotBeSelectedPrint,
+    noMessagesSelectedPrint
 } = require('../lib/print');
 
 const { yesNoEnum, purgeQueueMessageConfirmationInput, deleteMessageConfirmationInput } = require('../lib/deleteQueueHelper')
@@ -161,6 +162,8 @@ const selectMessages = async () => {
                                         response.targetQueueName
                                     );
                                 });
+                            } else {
+                                noMessagesSelectedPrint();
                             }
                         } else if (response.action === DELETE_MESSAGE) {
                             await API.deleteMessageBatch(
