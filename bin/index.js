@@ -3,7 +3,7 @@
 const { program } = require('commander');
 const { createAPI } = require('../lib/api');
 const { getRegion } = require('../lib/conf');
-const { MOVE_MESSAGE, DELETE_MESSAGE } = require('../lib/const');
+const { MOVE_MESSAGE, DELETE_MESSAGE, COPY_MESSAGE } = require('../lib/const');
 const {
     regexSelectMessage,
     createDeleteArray,
@@ -24,7 +24,9 @@ const {
     queuePurgedSuccessfullyPrint,
     queueNotExistCannotBeDeletedPrint,
     queueNotExistCannotBePurgedPrint,
-    queueNotExistCannotBeSelectedPrint
+    queueNotExistCannotBeSelectedPrint,
+    noMessagesSelectedPrint,
+    messagesCopiedSuccessfullyPrint
 } = require('../lib/print');
 
 const { yesNoEnum, purgeQueueMessageConfirmationInput, deleteMessageConfirmationInput } = require('../lib/deleteQueueHelper')
@@ -140,13 +142,13 @@ const selectMessages = async () => {
             await promptForFurtherAction(regexSelectedMessages).then(
                 async (response) => {
                     if (response.action) {
-                        const deleteArray = createDeleteArray(
-                            response.messages,
-                            deleteMessages
-                        );
+                        if(response.messages.length > 0) {
+                            const deleteArray = createDeleteArray(
+                                response.messages,
+                                deleteMessages
+                            );
 
-                        if (response.action === MOVE_MESSAGE) {
-                            if (response.messages.length > 0) {
+                            if (response.action === MOVE_MESSAGE) {
                                 await API.sendMessagesBatch(
                                     response.targetQueueName,
                                     response.messages
@@ -161,17 +163,29 @@ const selectMessages = async () => {
                                         response.targetQueueName
                                     );
                                 });
+
+                            } else if (response.action === COPY_MESSAGE) {
+                                await API.sendMessagesBatch(response.targetQueueName, response.messages)
+                                messagesCopiedSuccessfullyPrint(
+                                    response.messages.length,
+                                    sourceQueue,
+                                    response.targetQueueName
+                                );
+
+                            } else if (response.action === DELETE_MESSAGE) {
+                                await API.deleteMessageBatch(
+                                    deleteArray,
+                                    sourceQueue
+                                );
+                                messagesDeletedSuccessfullyPrint(
+                                    deleteArray.length,
+                                    sourceQueue
+                                );
                             }
-                        } else if (response.action === DELETE_MESSAGE) {
-                            await API.deleteMessageBatch(
-                                deleteArray,
-                                sourceQueue
-                            );
-                            messagesDeletedSuccessfullyPrint(
-                                deleteArray.length,
-                                sourceQueue
-                            );
+                        } else {
+                            noMessagesSelectedPrint();
                         }
+
                     }
                 }
             );
@@ -213,7 +227,7 @@ const createQueue = async () => {
 
 const listQueues = async () => {
     try {
-        const optionalParameters = getParameters('list-queues')[1];
+        const optionalParameters = getParameters('list')[1];
         const namePrefix = optionalParameters['namePrefix'];
 
         const API = await createAPI();
@@ -285,7 +299,7 @@ program
     .option('-mg, --message <message>', 'Set message');
 
 program
-    .command('list-queues')
+    .command('list')
     .description('List all queues')
     .action(listQueues);
 
@@ -300,14 +314,19 @@ program
     .action(peekMessages);
 
 program
-    .command('select')
-    .description('Select messages by regular expression')
-    .action(selectMessages);
-
-program
     .command('send')
     .description('Send a message to a specific queue')
     .action(sendMessage);
+
+program
+    .command('copy')
+    .description('Copy messages from one queue to another')
+    .action(copyMessages);
+
+program
+    .command('purge')
+    .description('Purge a queue')
+    .action(purgeQueue);
 
 program
     .command('create')
@@ -320,13 +339,9 @@ program
     .action(deleteQueue);
 
 program
-    .command('copy')
-    .description('Copy messages from one queue to another')
-    .action(copyMessages);
+    .command('select')
+    .description('Select messages by regular expression')
+    .action(selectMessages);
 
-program
-    .command('purge')
-    .description('Purge a queue')
-    .action(purgeQueue);
 
 program.parse(process.argv);
