@@ -2,7 +2,10 @@
   "name": "sqs-toolbox",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "bin": {
+    "sqs-toolbox": "./bin/index.js"
+  },
+  "main": "./bin/index.js",
   "scripts": {},
   "author": "",
   "license": "MIT",
@@ -33,6 +36,10 @@
     "rules": {
       "no-trailing-spaces": [
         "error"
+      ],
+      "indent": [
+        "error",
+        2
       ],
       "quotes": [
         2,
